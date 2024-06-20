@@ -8,8 +8,13 @@ def decrement(counter):
 
 def main():
     counter = 0
-    counter = increment(counter)
-    counter = decrement(counter)
+    action = input("Enter 'i' to increment or 'd' to decrement: ").strip().lower()
+    if action == 'i':
+        counter = increment(counter)
+    elif action == 'd':
+        counter = decrement(counter)
+    else:
+        print("Invalid input.")
     print(f"Counter: {counter}")
 
 if __name__ == "__main__":
