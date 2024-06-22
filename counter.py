@@ -11,16 +11,19 @@ def reset():
 
 def main():
     counter = 0
-    action = input("Enter 'i' to increment, 'd' to decrement, or 'r' to reset: ").strip().lower()
-    if action == 'i':
-        counter = increment(counter)
-    elif action == 'd':
-        counter = decrement(counter)
-    elif action == 'r':
-        counter = reset()
-    else:
-        print("Invalid input.")
-    print(f"Counter: {counter}")
+    while True:
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, or 'q' to quit: ").strip().lower()
+        if action == 'i':
+            counter = increment(counter)
+        elif action == 'd':
+            counter = decrement(counter)
+        elif action == 'r':
+            counter = reset()
+        elif action == 'q':
+            break
+        else:
+            print("Invalid input.")
+        print(f"Counter: {counter}")
 
 if __name__ == "__main__":
     main()
