@@ -35,8 +35,13 @@ def load_history():
 def main():
     counter = load_counter()
     history = load_history()
+    previous_counters = []
+    
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 'h' to view history, or 'q' to quit: ").strip().lower()
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 'h' to view history, 'u' to undo last action, or 'q' to quit: ").strip().lower()
+        if action in ['i', 'd', 'r']:
+            previous_counters.append(counter)
+        
         if action == 'i':
             counter = increment(counter)
             history.append("Increment")
@@ -51,12 +56,20 @@ def main():
             for record in history:
                 print(record)
             continue  # Skip the print counter line
+        elif action == 'u':
+            if previous_counters:
+                counter = previous_counters.pop()
+                history.append("Undo")
+            else:
+                print("Nothing to undo.")
+            continue  # Skip the print counter line
         elif action == 'q':
             save_counter(counter)
             save_history(history)
             break
         else:
             print("Invalid input.")
+        
         print(f"Counter: {counter}")
 
 if __name__ == "__main__":
