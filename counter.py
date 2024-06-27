@@ -33,7 +33,11 @@ def load_history():
         return []
 
 def main():
-    counter = load_counter()
+    if input("Would you like to set a starting value for the counter? (y/n): ").strip().lower() == 'y':
+        counter = int(input("Enter the starting value for the counter: "))
+    else:
+        counter = load_counter()
+
     history = load_history()
     previous_counters = []
     all_counters = [counter]
