@@ -1,5 +1,4 @@
 # counter.py
-import os
 
 def increment(counter):
     return counter + 1
@@ -10,35 +9,43 @@ def decrement(counter):
 def reset():
     return 0
 
-def save_counter(counter):
-    with open("counter.txt", "w") as f:
+def save_counter(counter, filename):
+    with open(filename, "w") as f:
         f.write(str(counter))
 
-def load_counter():
-    if os.path.exists("counter.txt"):
-        with open("counter.txt", "r") as f:
+def load_counter(filename):
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
             return int(f.read())
     else:
         return 0
 
-def save_history(history):
-    with open("history.txt", "w") as f:
+def save_history(history, filename):
+    with open(filename, "w") as f:
         f.write("\n".join(history))
 
-def load_history():
-    if os.path.exists("history.txt"):
-        with open("history.txt", "r") as f:
+def load_history(filename):
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
             return f.read().split("\n")
     else:
         return []
 
 def main():
+    counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
+    if not counter_file:
+        counter_file = "counter.txt"
+
+    history_file = input("Enter filename to save history (default: history.txt): ").strip()
+    if not history_file:
+        history_file = "history.txt"
+
     if input("Would you like to set a starting value for the counter? (y/n): ").strip().lower() == 'y':
         counter = int(input("Enter the starting value for the counter: "))
     else:
-        counter = load_counter()
+        counter = load_counter(counter_file)
 
-    history = load_history()
+    history = load_history(history_file)
     previous_counters = []
     all_counters = [counter]
 
@@ -78,8 +85,8 @@ def main():
                 print("Nothing to undo.")
             continue  # Skip the print counter line
         elif action == 'q':
-            save_counter(counter)
-            save_history(history)
+            save_counter(counter, counter_file)
+            save_history(history, history_file)
             break
         else:
             print("Invalid input.")
