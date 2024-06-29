@@ -1,4 +1,5 @@
 # counter.py
+import os
 
 def increment(counter):
     return counter + 1
@@ -31,6 +32,13 @@ def load_history(filename):
     else:
         return []
 
+def get_valid_integer(prompt):
+    while True:
+        try:
+            return int(input(prompt))
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")
+
 def main():
     counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
     if not counter_file:
@@ -41,11 +49,20 @@ def main():
         history_file = "history.txt"
 
     if input("Would you like to set a starting value for the counter? (y/n): ").strip().lower() == 'y':
-        counter = int(input("Enter the starting value for the counter: "))
+        counter = get_valid_integer("Enter the starting value for the counter: ")
     else:
-        counter = load_counter(counter_file)
+        if os.path.exists(counter_file):
+            counter = load_counter(counter_file)
+        else:
+            print(f"File '{counter_file}' not found. Starting counter at 0.")
+            counter = 0
 
-    history = load_history(history_file)
+    if os.path.exists(history_file):
+        history = load_history(history_file)
+    else:
+        print(f"File '{history_file}' not found. Starting with an empty history.")
+        history = []
+
     previous_counters = []
     all_counters = [counter]
 
