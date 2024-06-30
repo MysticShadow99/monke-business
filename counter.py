@@ -1,5 +1,6 @@
 # counter.py
 import os
+import datetime
 
 def increment(counter):
     return counter + 1
@@ -65,24 +66,28 @@ def main():
 
     previous_counters = []
     all_counters = [counter]
+    last_modified = datetime.datetime.now()
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 'h' to view history, 'a' to view all counter values, 'u' to undo last action, or 'q' to quit: ").strip().lower()
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, or 'q' to quit: ").strip().lower()
         if action in ['i', 'd', 'r']:
             previous_counters.append(counter)
         
         if action == 'i':
             counter = increment(counter)
-            history.append("Increment")
+            history.append(f"Increment at {datetime.datetime.now()}")
             all_counters.append(counter)
+            last_modified = datetime.datetime.now()
         elif action == 'd':
             counter = decrement(counter)
-            history.append("Decrement")
+            history.append(f"Decrement at {datetime.datetime.now()}")
             all_counters.append(counter)
+            last_modified = datetime.datetime.now()
         elif action == 'r':
             counter = reset()
-            history.append("Reset")
+            history.append(f"Reset at {datetime.datetime.now()}")
             all_counters.append(counter)
+            last_modified = datetime.datetime.now()
         elif action == 'h':
             print("History:")
             for record in history:
@@ -93,11 +98,15 @@ def main():
             for value in all_counters:
                 print(value)
             continue  # Skip the print counter line
+        elif action == 't':
+            print(f"Last modified time: {last_modified}")
+            continue  # Skip the print counter line
         elif action == 'u':
             if previous_counters:
                 counter = previous_counters.pop()
-                history.append("Undo")
+                history.append(f"Undo at {datetime.datetime.now()}")
                 all_counters.append(counter)
+                last_modified = datetime.datetime.now()
             else:
                 print("Nothing to undo.")
             continue  # Skip the print counter line
