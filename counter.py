@@ -117,7 +117,7 @@ def main():
         else:
             print("Invalid input.")
         
-        print(f"Counter: {counter}")
+        print(f"Counter: {counter} (Last modified: {last_modified})")
 
 if __name__ == "__main__":
     main()
