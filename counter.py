@@ -11,6 +11,9 @@ def decrement(counter):
 def reset():
     return 0
 
+def set_counter(value):
+    return value
+
 def save_counter(counter, filename):
     with open(filename, "w") as f:
         f.write(str(counter))
@@ -69,8 +72,8 @@ def main():
     last_modified = datetime.datetime.now()
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, or 'q' to quit: ").strip().lower()
-        if action in ['i', 'd', 'r']:
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, or 'q' to quit: ").strip().lower()
+        if action in ['i', 'd', 'r', 's']:
             previous_counters.append(counter)
         
         if action == 'i':
@@ -86,6 +89,11 @@ def main():
         elif action == 'r':
             counter = reset()
             history.append(f"Reset at {datetime.datetime.now()}")
+            all_counters.append(counter)
+            last_modified = datetime.datetime.now()
+        elif action == 's':
+            counter = get_valid_integer("Enter the value to set the counter to: ")
+            history.append(f"Set counter to {counter} at {datetime.datetime.now()}")
             all_counters.append(counter)
             last_modified = datetime.datetime.now()
         elif action == 'h':
