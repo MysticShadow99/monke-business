@@ -1,6 +1,7 @@
 # counter.py
 import os
 import datetime
+import csv
 
 def increment(counter):
     return counter + 1
@@ -35,6 +36,13 @@ def load_history(filename):
             return f.read().split("\n")
     else:
         return []
+
+def export_to_csv(counter_values, history, filename):
+    with open(filename, "w", newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["Counter Value", "Action", "Timestamp"])
+        for value, record in zip(counter_values, history):
+            writer.writerow([value, record.split(' at ')[0], record.split(' at ')[1]])
 
 def get_valid_integer(prompt):
     while True:
@@ -72,7 +80,7 @@ def main():
     last_modified = datetime.datetime.now()
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, or 'q' to quit: ").strip().lower()
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, or 'q' to quit: ").strip().lower()
         if action in ['i', 'd', 'r', 's']:
             previous_counters.append(counter)
         
@@ -117,6 +125,13 @@ def main():
                 last_modified = datetime.datetime.now()
             else:
                 print("Nothing to undo.")
+            continue  # Skip the print counter line
+        elif action == 'e':
+            csv_filename = input("Enter filename for the CSV export (default: export.csv): ").strip()
+            if not csv_filename:
+                csv_filename = "export.csv"
+            export_to_csv(all_counters, history, csv_filename)
+            print(f"Data exported to {csv_filename}")
             continue  # Skip the print counter line
         elif action == 'q':
             save_counter(counter, counter_file)
