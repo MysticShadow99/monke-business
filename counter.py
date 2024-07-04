@@ -51,6 +51,10 @@ def get_valid_integer(prompt):
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
 
+def auto_save(counter, history, counter_file, history_file):
+    save_counter(counter, counter_file)
+    save_history(history, history_file)
+
 def main():
     counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
     if not counter_file:
@@ -140,6 +144,7 @@ def main():
         else:
             print("Invalid input.")
         
+        auto_save(counter, history, counter_file, history_file)
         print(f"Counter: {counter} (Last modified: {last_modified})")
 
 if __name__ == "__main__":
