@@ -2,6 +2,7 @@
 import os
 import datetime
 import csv
+import shutil
 
 def increment(counter):
     return counter + 1
@@ -54,6 +55,14 @@ def get_valid_integer(prompt):
 def auto_save(counter, history, counter_file, history_file):
     save_counter(counter, counter_file)
     save_history(history, history_file)
+    backup_file(counter_file)
+    backup_file(history_file)
+
+def backup_file(filename):
+    if os.path.exists(filename):
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        backup_filename = f"{filename}_{timestamp}.bak"
+        shutil.copy(filename, backup_filename)
 
 def main():
     counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
