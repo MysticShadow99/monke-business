@@ -52,17 +52,22 @@ def get_valid_integer(prompt):
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
 
-def auto_save(counter, history, counter_file, history_file):
+def auto_save(counter, history, counter_file, history_file, max_backups=5):
     save_counter(counter, counter_file)
     save_history(history, history_file)
-    backup_file(counter_file)
-    backup_file(history_file)
+    backup_file(counter_file, max_backups)
+    backup_file(history_file, max_backups)
 
-def backup_file(filename):
+def backup_file(filename, max_backups):
     if os.path.exists(filename):
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         backup_filename = f"{filename}_{timestamp}.bak"
         shutil.copy(filename, backup_filename)
+        
+        backups = sorted([f for f in os.listdir() if f.startswith(filename) and f.endswith(".bak")])
+        if len(backups) > max_backups:
+            for old_backup in backups[:-max_backups]:
+                os.remove(old_backup)
 
 def main():
     counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
