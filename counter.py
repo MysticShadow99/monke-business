@@ -69,6 +69,18 @@ def backup_file(filename, max_backups):
             for old_backup in backups[:-max_backups]:
                 os.remove(old_backup)
 
+def print_stats(history):
+    increments = sum(1 for action in history if action.startswith("Increment"))
+    decrements = sum(1 for action in history if action.startswith("Decrement"))
+    resets = sum(1 for action in history if action.startswith("Reset"))
+    sets = sum(1 for action in history if action.startswith("Set counter to"))
+    
+    print(f"Statistics:")
+    print(f"Increments: {increments}")
+    print(f"Decrements: {decrements}")
+    print(f"Resets: {resets}")
+    print(f"Sets: {sets}")
+
 def main():
     counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
     if not counter_file:
@@ -98,7 +110,7 @@ def main():
     last_modified = datetime.datetime.now()
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, or 'q' to quit: ").strip().lower()
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'p' to view statistics, or 'q' to quit: ").strip().lower()
         if action in ['i', 'd', 'r', 's']:
             previous_counters.append(counter)
         
@@ -150,6 +162,9 @@ def main():
                 csv_filename = "export.csv"
             export_to_csv(all_counters, history, csv_filename)
             print(f"Data exported to {csv_filename}")
+            continue  # Skip the print counter line
+        elif action == 'p':
+            print_stats(history)
             continue  # Skip the print counter line
         elif action == 'q':
             save_counter(counter, counter_file)
