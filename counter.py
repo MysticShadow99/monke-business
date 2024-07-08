@@ -38,6 +38,17 @@ def load_history(filename):
     else:
         return []
 
+def save_all_counters(all_counters, filename):
+    with open(filename, "w") as f:
+        f.write("\n".join(map(str, all_counters)))
+
+def load_all_counters(filename):
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            return list(map(int, f.read().split("\n")))
+    else:
+        return []
+
 def export_to_csv(counter_values, history, filename):
     with open(filename, "w", newline='') as csvfile:
         writer = csv.writer(csvfile)
@@ -52,11 +63,13 @@ def get_valid_integer(prompt):
         except ValueError:
             print("Invalid input. Please enter a valid integer.")
 
-def auto_save(counter, history, counter_file, history_file, max_backups=5):
+def auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file, max_backups=5):
     save_counter(counter, counter_file)
     save_history(history, history_file)
+    save_all_counters(all_counters, all_counters_file)
     backup_file(counter_file, max_backups)
     backup_file(history_file, max_backups)
+    backup_file(all_counters_file, max_backups)
 
 def backup_file(filename, max_backups):
     if os.path.exists(filename):
@@ -90,6 +103,10 @@ def main():
     if not history_file:
         history_file = "history.txt"
 
+    all_counters_file = input("Enter filename to save all counter values (default: all_counters.txt): ").strip()
+    if not all_counters_file:
+        all_counters_file = "all_counters.txt"
+
     if input("Would you like to set a starting value for the counter? (y/n): ").strip().lower() == 'y':
         counter = get_valid_integer("Enter the starting value for the counter: ")
     else:
@@ -105,8 +122,13 @@ def main():
         print(f"File '{history_file}' not found. Starting with an empty history.")
         history = []
 
+    if os.path.exists(all_counters_file):
+        all_counters = load_all_counters(all_counters_file)
+    else:
+        print(f"File '{all_counters_file}' not found. Starting with an empty counter list.")
+        all_counters = [counter]
+
     previous_counters = []
-    all_counters = [counter]
     last_modified = datetime.datetime.now()
 
     while True:
@@ -169,11 +191,12 @@ def main():
         elif action == 'q':
             save_counter(counter, counter_file)
             save_history(history, history_file)
+            save_all_counters(all_counters, all_counters_file)
             break
         else:
             print("Invalid input.")
         
-        auto_save(counter, history, counter_file, history_file)
+        auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
         print(f"Counter: {counter} (Last modified: {last_modified})")
 
 if __name__ == "__main__":
