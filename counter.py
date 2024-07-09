@@ -3,6 +3,7 @@ import os
 import datetime
 import csv
 import shutil
+import threading
 
 def increment(counter):
     return counter + 1
@@ -94,6 +95,15 @@ def print_stats(history):
     print(f"Resets: {resets}")
     print(f"Sets: {sets}")
 
+def periodic_backup(interval, counter, history, all_counters, counter_file, history_file, all_counters_file):
+    def backup():
+        while True:
+            auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
+            print(f"Periodic backup completed at {datetime.datetime.now()}")
+            threading.Event().wait(interval)
+    
+    threading.Thread(target=backup, daemon=True).start()
+
 def main():
     counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
     if not counter_file:
@@ -106,6 +116,10 @@ def main():
     all_counters_file = input("Enter filename to save all counter values (default: all_counters.txt): ").strip()
     if not all_counters_file:
         all_counters_file = "all_counters.txt"
+
+    backup_interval = get_valid_integer("Enter backup interval in seconds (default: 600): ")
+    if not backup_interval:
+        backup_interval = 600  # Default backup interval is 10 minutes
 
     if input("Would you like to set a starting value for the counter? (y/n): ").strip().lower() == 'y':
         counter = get_valid_integer("Enter the starting value for the counter: ")
@@ -130,6 +144,8 @@ def main():
 
     previous_counters = []
     last_modified = datetime.datetime.now()
+
+    periodic_backup(backup_interval, counter, history, all_counters, counter_file, history_file, all_counters_file)
 
     while True:
         action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'p' to view statistics, or 'q' to quit: ").strip().lower()
