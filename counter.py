@@ -104,6 +104,11 @@ def periodic_backup(interval, counter, history, all_counters, counter_file, hist
     
     threading.Thread(target=backup, daemon=True).start()
 
+def check_notifications(counter, notifications):
+    for value, message in notifications.items():
+        if counter == value:
+            print(f"Notification: {message}")
+
 def main():
     counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip()
     if not counter_file:
@@ -120,6 +125,15 @@ def main():
     backup_interval = get_valid_integer("Enter backup interval in seconds (default: 600): ")
     if not backup_interval:
         backup_interval = 600  # Default backup interval is 10 minutes
+
+    notifications = {}
+    while True:
+        try:
+            notification_value = int(input("Enter a counter value to set a notification for (or press Enter to skip): ").strip())
+            notification_message = input(f"Enter a message for when the counter reaches {notification_value}: ").strip()
+            notifications[notification_value] = notification_message
+        except ValueError:
+            break
 
     if input("Would you like to set a starting value for the counter? (y/n): ").strip().lower() == 'y':
         counter = get_valid_integer("Enter the starting value for the counter: ")
@@ -213,6 +227,7 @@ def main():
             print("Invalid input.")
         
         auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
+        check_notifications(counter, notifications)
         print(f"Counter: {counter} (Last modified: {last_modified})")
 
 if __name__ == "__main__":
