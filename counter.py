@@ -4,6 +4,7 @@ import datetime
 import csv
 import shutil
 import threading
+import json
 
 def increment(counter): return counter + 1
 def decrement(counter): return counter - 1
@@ -16,17 +17,10 @@ def save_to_file(data, filename):
 def load_from_file(filename, default="0"):
     return open(filename).read() if os.path.exists(filename) else default
 
-def save_history(history, filename):
-    save_to_file("\n".join(history), filename)
-
-def load_history(filename):
-    return load_from_file(filename, "").split("\n")
-
-def save_all_counters(all_counters, filename):
-    save_to_file("\n".join(map(str, all_counters)), filename)
-
-def load_all_counters(filename):
-    return list(map(int, load_from_file(filename, "").split("\n")))
+def save_history(history, filename): save_to_file("\n".join(history), filename)
+def load_history(filename): return load_from_file(filename, "").split("\n")
+def save_all_counters(all_counters, filename): save_to_file("\n".join(map(str, all_counters)), filename)
+def load_all_counters(filename): return list(map(int, load_from_file(filename, "").split("\n")))
 
 def export_to_csv(counter_values, history, filename):
     with open(filename, "w", newline='') as csvfile:
@@ -70,13 +64,24 @@ def periodic_backup(interval, counter, history, all_counters, counter_file, hist
 def check_notifications(counter, notifications):
     if counter in notifications: print(f"Notification: {notifications[counter]}")
 
-def main():
-    counter_file = input("Enter filename to save counter value (default: counter.txt): ").strip() or "counter.txt"
-    history_file = input("Enter filename to save history (default: history.txt): ").strip() or "history.txt"
-    all_counters_file = input("Enter filename to save all counter values (default: all_counters.txt): ").strip() or "all_counters.txt"
-    backup_interval = get_valid_integer("Enter backup interval in seconds (default: 600): ") or 600
+def save_settings(settings, filename="settings.json"):
+    with open(filename, "w") as f:
+        json.dump(settings, f)
 
-    notifications = {}
+def load_settings(filename="settings.json"):
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            return json.load(f)
+    return {}
+
+def main():
+    settings = load_settings()
+    counter_file = settings.get("counter_file", input("Enter filename to save counter value (default: counter.txt): ").strip() or "counter.txt")
+    history_file = settings.get("history_file", input("Enter filename to save history (default: history.txt): ").strip() or "history.txt")
+    all_counters_file = settings.get("all_counters_file", input("Enter filename to save all counter values (default: all_counters.txt): ").strip() or "all_counters.txt")
+    backup_interval = settings.get("backup_interval", get_valid_integer("Enter backup interval in seconds (default: 600): ") or 600)
+    notifications = settings.get("notifications", {})
+
     while True:
         try:
             notification_value = int(input("Enter a counter value to set a notification for (or press Enter to skip): ").strip())
@@ -85,10 +90,12 @@ def main():
             break
 
     counter = get_valid_integer("Enter the starting value for the counter: ") if input("Set starting value for counter? (y/n): ").strip().lower() == 'y' else int(load_from_file(counter_file))
-    history = load_history(history_file)
-    all_counters = load_all_counters(all_counters_file) or [counter]
-
+    history, all_counters = load_history(history_file), load_all_counters(all_counters_file) or [counter]
     previous_counters, last_modified = [], datetime.datetime.now()
+
+    settings.update({"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications})
+    save_settings(settings)
+
     periodic_backup(backup_interval, counter, history, all_counters, counter_file, history_file, all_counters_file)
 
     actions = {
