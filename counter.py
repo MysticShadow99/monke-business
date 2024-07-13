@@ -65,14 +65,10 @@ def check_notifications(counter, notifications):
     if counter in notifications: print(f"Notification: {notifications[counter]}")
 
 def save_settings(settings, filename="settings.json"):
-    with open(filename, "w") as f:
-        json.dump(settings, f)
+    with open(filename, "w") as f: json.dump(settings, f)
 
 def load_settings(filename="settings.json"):
-    if os.path.exists(filename):
-        with open(filename, "r") as f:
-            return json.load(f)
-    return {}
+    return json.load(open(filename)) if os.path.exists(filename) else {}
 
 def main():
     settings = load_settings()
