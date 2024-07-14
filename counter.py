@@ -5,6 +5,7 @@ import csv
 import shutil
 import threading
 import json
+import argparse
 
 def increment(counter): return counter + 1
 def decrement(counter): return counter - 1
@@ -70,26 +71,26 @@ def save_settings(settings, filename="settings.json"):
 def load_settings(filename="settings.json"):
     return json.load(open(filename)) if os.path.exists(filename) else {}
 
-def main():
-    settings = load_settings()
-    counter_file = settings.get("counter_file", input("Enter filename to save counter value (default: counter.txt): ").strip() or "counter.txt")
-    history_file = settings.get("history_file", input("Enter filename to save history (default: history.txt): ").strip() or "history.txt")
-    all_counters_file = settings.get("all_counters_file", input("Enter filename to save all counter values (default: all_counters.txt): ").strip() or "all_counters.txt")
-    backup_interval = settings.get("backup_interval", get_valid_integer("Enter backup interval in seconds (default: 600): ") or 600)
-    notifications = settings.get("notifications", {})
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Counter script with auto-save and notifications.")
+    parser.add_argument("--counter_file", type=str, default="counter.txt", help="Filename to save counter value")
+    parser.add_argument("--history_file", type=str, default="history.txt", help="Filename to save history")
+    parser.add_argument("--all_counters_file", type=str, default="all_counters.txt", help="Filename to save all counter values")
+    parser.add_argument("--backup_interval", type=int, default=600, help="Backup interval in seconds")
+    parser.add_argument("--notification", nargs=2, action='append', help="Set notifications in the format 'value message'")
+    return parser.parse_args()
 
-    while True:
-        try:
-            notification_value = int(input("Enter a counter value to set a notification for (or press Enter to skip): ").strip())
-            notifications[notification_value] = input(f"Enter a message for when the counter reaches {notification_value}: ").strip()
-        except ValueError:
-            break
+def main():
+    args = parse_arguments()
+    counter_file, history_file, all_counters_file = args.counter_file, args.history_file, args.all_counters_file
+    backup_interval = args.backup_interval
+    notifications = {int(k): v for k, v in args.notification} if args.notification else {}
 
     counter = get_valid_integer("Enter the starting value for the counter: ") if input("Set starting value for counter? (y/n): ").strip().lower() == 'y' else int(load_from_file(counter_file))
     history, all_counters = load_history(history_file), load_all_counters(all_counters_file) or [counter]
     previous_counters, last_modified = [], datetime.datetime.now()
 
-    settings.update({"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications})
+    settings = {"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications}
     save_settings(settings)
 
     periodic_backup(backup_interval, counter, history, all_counters, counter_file, history_file, all_counters_file)
