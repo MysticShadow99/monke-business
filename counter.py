@@ -73,18 +73,25 @@ def load_settings(filename="settings.json"):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Counter script with auto-save and notifications.")
-    parser.add_argument("--counter_file", type=str, default="counter.txt", help="Filename to save counter value")
-    parser.add_argument("--history_file", type=str, default="history.txt", help="Filename to save history")
-    parser.add_argument("--all_counters_file", type=str, default="all_counters.txt", help="Filename to save all counter values")
-    parser.add_argument("--backup_interval", type=int, default=600, help="Backup interval in seconds")
+    parser.add_argument("--config", type=str, help="Filename of the configuration file")
+    parser.add_argument("--counter_file", type=str, help="Filename to save counter value")
+    parser.add_argument("--history_file", type=str, help="Filename to save history")
+    parser.add_argument("--all_counters_file", type=str, help="Filename to save all counter values")
+    parser.add_argument("--backup_interval", type=int, help="Backup interval in seconds")
     parser.add_argument("--notification", nargs=2, action='append', help="Set notifications in the format 'value message'")
     return parser.parse_args()
 
+def load_config_from_file(config_file):
+    with open(config_file, "r") as f: return json.load(f)
+
 def main():
     args = parse_arguments()
-    counter_file, history_file, all_counters_file = args.counter_file, args.history_file, args.all_counters_file
-    backup_interval = args.backup_interval
-    notifications = {int(k): v for k, v in args.notification} if args.notification else {}
+    config = load_config_from_file(args.config) if args.config else {}
+    counter_file = args.counter_file or config.get("counter_file", "counter.txt")
+    history_file = args.history_file or config.get("history_file", "history.txt")
+    all_counters_file = args.all_counters_file or config.get("all_counters_file", "all_counters.txt")
+    backup_interval = args.backup_interval or config.get("backup_interval", 600)
+    notifications = {int(k): v for k, v in args.notification} if args.notification else config.get("notifications", {})
 
     counter = get_valid_integer("Enter the starting value for the counter: ") if input("Set starting value for counter? (y/n): ").strip().lower() == 'y' else int(load_from_file(counter_file))
     history, all_counters = load_history(history_file), load_all_counters(all_counters_file) or [counter]
