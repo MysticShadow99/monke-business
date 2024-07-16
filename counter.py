@@ -84,6 +84,11 @@ def parse_arguments():
 def load_config_from_file(config_file):
     with open(config_file, "r") as f: return json.load(f)
 
+def display_settings(settings):
+    print("Current settings:")
+    for key, value in settings.items():
+        print(f"{key}: {value}")
+
 def main():
     args = parse_arguments()
     config = load_config_from_file(args.config) if args.config else {}
@@ -110,7 +115,7 @@ def main():
     }
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'p' to view statistics, 'c' to clear history, or 'q' to quit: ").strip().lower()
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ").strip().lower()
         if action in actions:
             previous_counters.append(counter)
             action_name, action_func = actions[action]
@@ -138,6 +143,8 @@ def main():
             save_history([], history_file)
             history = []
             print("History cleared.")
+        elif action == 'f':
+            display_settings(settings)
         elif action == 'q':
             auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
             break
