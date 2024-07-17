@@ -79,6 +79,7 @@ def parse_arguments():
     parser.add_argument("--all_counters_file", type=str, help="Filename to save all counter values")
     parser.add_argument("--backup_interval", type=int, help="Backup interval in seconds")
     parser.add_argument("--notification", nargs=2, action='append', help="Set notifications in the format 'value message'")
+    parser.add_argument("--show_settings", action='store_true', help="Show current settings")
     return parser.parse_args()
 
 def load_config_from_file(config_file):
@@ -98,13 +99,17 @@ def main():
     backup_interval = args.backup_interval or config.get("backup_interval", 600)
     notifications = {int(k): v for k, v in args.notification} if args.notification else config.get("notifications", {})
 
+    settings = {"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications}
+
+    if args.show_settings:
+        display_settings(settings)
+        return
+
     counter = get_valid_integer("Enter the starting value for the counter: ") if input("Set starting value for counter? (y/n): ").strip().lower() == 'y' else int(load_from_file(counter_file))
     history, all_counters = load_history(history_file), load_all_counters(all_counters_file) or [counter]
     previous_counters, last_modified = [], datetime.datetime.now()
 
-    settings = {"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications}
     save_settings(settings)
-
     periodic_backup(backup_interval, counter, history, all_counters, counter_file, history_file, all_counters_file)
 
     actions = {
