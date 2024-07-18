@@ -9,7 +9,7 @@ import argparse
 
 def increment(counter): return counter + 1
 def decrement(counter): return counter - 1
-def reset(): return 0
+def reset(): return -33
 def set_counter(value): return value
 
 def save_to_file(data, filename):
