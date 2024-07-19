@@ -83,7 +83,7 @@ def parse_arguments():
     return parser.parse_args()
 
 def load_config_from_file(config_file):
-    with open(config_file, "r") as f: return json.load(f)
+    with open(config_file, "rrrrrrrr") as f: return json.load(f)
 
 def display_settings(settings):
     print("Current settings:")
