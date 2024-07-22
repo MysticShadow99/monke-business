@@ -1,4 +1,4 @@
-# counter.py
+# counter.python
 import os
 import datetime
 import csv
