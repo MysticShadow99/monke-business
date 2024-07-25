@@ -1,4 +1,4 @@
-# counter.python
+# counter.py
 import os
 import datetime
 import csv
@@ -9,7 +9,7 @@ import argparse
 
 def increment(counter): return counter + 1
 def decrement(counter): return counter - 1
-def reset(): return -33
+def reset(): return 0
 def set_counter(value): return value
 
 def save_to_file(data, filename):
@@ -29,6 +29,10 @@ def export_to_csv(counter_values, history, filename):
         writer.writerow(["Counter Value", "Action", "Timestamp"])
         for value, record in zip(counter_values, history):
             writer.writerow([value, record.split(' at ')[0], record.split(' at ')[1]])
+
+def export_to_json(counter_values, history, filename):
+    with open(filename, "w") as jsonfile:
+        json.dump([{"Counter Value": value, "Action": record.split(' at ')[0], "Timestamp": record.split(' at ')[1]} for value, record in zip(counter_values, history)], jsonfile, indent=4)
 
 def get_valid_integer(prompt):
     while True:
@@ -83,7 +87,7 @@ def parse_arguments():
     return parser.parse_args()
 
 def load_config_from_file(config_file):
-    with open(config_file, "rrrrrrrr") as f: return json.load(f)
+    with open(config_file, "r") as f: return json.load(f)
 
 def display_settings(settings):
     print("Current settings:")
@@ -120,7 +124,7 @@ def main():
     }
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ").strip().lower()
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'j' to export to JSON, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ").strip().lower()
         if action in actions:
             previous_counters.append(counter)
             action_name, action_func = actions[action]
@@ -141,6 +145,9 @@ def main():
             last_modified = datetime.datetime.now()
         elif action == 'e':
             export_to_csv(all_counters, history, input("Enter filename for the CSV export (default: export.csv): ").strip() or "export.csv")
+            print("Data exported.")
+        elif action == 'j':
+            export_to_json(all_counters, history, input("Enter filename for the JSON export (default: export.json): ").strip() or "export.json")
             print("Data exported.")
         elif action == 'p':
             print_stats(history)
