@@ -34,6 +34,13 @@ def export_to_json(counter_values, history, filename):
     with open(filename, "w") as jsonfile:
         json.dump([{"Counter Value": value, "Action": record.split(' at ')[0], "Timestamp": record.split(' at ')[1]} for value, record in zip(counter_values, history)], jsonfile, indent=4)
 
+def import_from_json(filename):
+    with open(filename, "r") as jsonfile:
+        data = json.load(jsonfile)
+        history = [f"{item['Action']} at {item['Timestamp']}" for item in data]
+        counter_values = [item["Counter Value"] for item in data]
+    return counter_values, history
+
 def get_valid_integer(prompt):
     while True:
         try: return int(input(prompt))
@@ -124,7 +131,7 @@ def main():
     }
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'j' to export to JSON, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ").strip().lower()
+        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'j' to export to JSON, 'k' to import from JSON, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ").strip().lower()
         if action in actions:
             previous_counters.append(counter)
             action_name, action_func = actions[action]
@@ -149,6 +156,11 @@ def main():
         elif action == 'j':
             export_to_json(all_counters, history, input("Enter filename for the JSON export (default: export.json): ").strip() or "export.json")
             print("Data exported.")
+        elif action == 'k':
+            filename = input("Enter filename to import from JSON (default: import.json): ").strip() or "import.json"
+            all_counters, history = import_from_json(filename)
+            counter = all_counters[-1] if all_counters else 0
+            print("Data imported.")
         elif action == 'p':
             print_stats(history)
         elif action == 'c':
