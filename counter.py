@@ -91,6 +91,7 @@ def parse_arguments():
     parser.add_argument("--backup_interval", type=int, help="Backup interval in seconds")
     parser.add_argument("--notification", nargs=2, action='append', help="Set notifications in the format 'value message'")
     parser.add_argument("--show_settings", action='store_true', help="Show current settings")
+    parser.add_argument("--language", type=str, help="Set language for messages (en/ru)")
     return parser.parse_args()
 
 def load_config_from_file(config_file):
@@ -101,22 +102,63 @@ def display_settings(settings):
     for key, value in settings.items():
         print(f"{key}: {value}")
 
+def load_messages(language):
+    messages = {
+        "en": {
+            "set_starting_value": "Enter the starting value for the counter: ",
+            "invalid_input": "Invalid input. Please enter a valid integer.",
+            "enter_action": "Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'j' to export to JSON, 'k' to import from JSON, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ",
+            "invalid_input_action": "Invalid input.",
+            "history": "History:\n",
+            "all_values": "All counter values:\n",
+            "last_modified": "Last modified time: ",
+            "data_exported": "Data exported.",
+            "data_imported": "Data imported.",
+            "history_cleared": "History cleared.",
+            "counter": "Counter: ",
+            "last_modified_time": " (Last modified: ",
+            "periodic_backup": "Periodic backup completed at ",
+            "notification": "Notification: ",
+            "current_settings": "Current settings:",
+        },
+        "ru": {
+            "set_starting_value": "Введите начальное значение для счетчика: ",
+            "invalid_input": "Неверный ввод. Пожалуйста, введите действительное целое число.",
+            "enter_action": "Введите 'i' для увеличения, 'd' для уменьшения, 'r' для сброса, 's' для установки конкретного значения, 'h' для просмотра истории, 'a' для просмотра всех значений счетчика, 't' для просмотра времени последнего изменения, 'u' для отмены последнего действия, 'e' для экспорта в CSV, 'j' для экспорта в JSON, 'k' для импорта из JSON, 'p' для просмотра статистики, 'c' для очистки истории, 'f' для просмотра настроек или 'q' для выхода: ",
+            "invalid_input_action": "Неверный ввод.",
+            "history": "История:\n",
+            "all_values": "Все значения счетчика:\n",
+            "last_modified": "Время последнего изменения: ",
+            "data_exported": "Данные экспортированы.",
+            "data_imported": "Данные импортированы.",
+            "history_cleared": "История очищена.",
+            "counter": "Счетчик: ",
+            "last_modified_time": " (Последнее изменение: ",
+            "periodic_backup": "Периодическое резервное копирование выполнено в ",
+            "notification": "Уведомление: ",
+            "current_settings": "Текущие настройки:",
+        }
+    }
+    return messages.get(language, messages["en"])
+
 def main():
     args = parse_arguments()
     config = load_config_from_file(args.config) if args.config else {}
+    language = args.language or config.get("language", "en")
+    messages = load_messages(language)
     counter_file = args.counter_file or config.get("counter_file", "counter.txt")
     history_file = args.history_file or config.get("history_file", "history.txt")
     all_counters_file = args.all_counters_file or config.get("all_counters_file", "all_counters.txt")
     backup_interval = args.backup_interval or config.get("backup_interval", 600)
     notifications = {int(k): v for k, v in args.notification} if args.notification else config.get("notifications", {})
 
-    settings = {"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications}
+    settings = {"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications, "language": language}
 
     if args.show_settings:
         display_settings(settings)
         return
 
-    counter = get_valid_integer("Enter the starting value for the counter: ") if input("Set starting value for counter? (y/n): ").strip().lower() == 'y' else int(load_from_file(counter_file))
+    counter = get_valid_integer(messages["set_starting_value"]) if input("Set starting value for counter? (y/n): ").strip().lower() == 'y' else int(load_from_file(counter_file))
     history, all_counters = load_history(history_file), load_all_counters(all_counters_file) or [counter]
     previous_counters, last_modified = [], datetime.datetime.now()
 
@@ -127,11 +169,11 @@ def main():
         'i': ("Increment", increment),
         'd': ("Decrement", decrement),
         'r': ("Reset", reset),
-        's': ("Set counter to", lambda _: get_valid_integer("Enter the value to set the counter to: "))
+        's': ("Set counter to", lambda _: get_valid_integer(messages["set_starting_value"]))
     }
 
     while True:
-        action = input("Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'j' to export to JSON, 'k' to import from JSON, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ").strip().lower()
+        action = input(messages["enter_action"]).strip().lower()
         if action in actions:
             previous_counters.append(counter)
             action_name, action_func = actions[action]
@@ -140,11 +182,11 @@ def main():
             all_counters.append(counter)
             last_modified = datetime.datetime.now()
         elif action == 'h':
-            print("History:\n" + "\n".join(history))
+            print(messages["history"] + "\n".join(history))
         elif action == 'a':
-            print("All counter values:\n" + "\n".join(map(str, all_counters)))
+            print(messages["all_values"] + "\n".join(map(str, all_counters)))
         elif action == 't':
-            print(f"Last modified time: {last_modified}")
+            print(messages["last_modified"] + str(last_modified))
         elif action == 'u':
             counter = previous_counters.pop() if previous_counters else counter
             history.append(f"Undo at {datetime.datetime.now()}")
@@ -152,32 +194,32 @@ def main():
             last_modified = datetime.datetime.now()
         elif action == 'e':
             export_to_csv(all_counters, history, input("Enter filename for the CSV export (default: export.csv): ").strip() or "export.csv")
-            print("Data exported.")
+            print(messages["data_exported"])
         elif action == 'j':
             export_to_json(all_counters, history, input("Enter filename for the JSON export (default: export.json): ").strip() or "export.json")
-            print("Data exported.")
+            print(messages["data_exported"])
         elif action == 'k':
             filename = input("Enter filename to import from JSON (default: import.json): ").strip() or "import.json"
             all_counters, history = import_from_json(filename)
             counter = all_counters[-1] if all_counters else 0
-            print("Data imported.")
+            print(messages["data_imported"])
         elif action == 'p':
             print_stats(history)
         elif action == 'c':
             save_history([], history_file)
             history = []
-            print("History cleared.")
+            print(messages["history_cleared"])
         elif action == 'f':
             display_settings(settings)
         elif action == 'q':
             auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
             break
         else:
-            print("Invalid input.")
-        
+            print(messages["invalid_input_action"])
+
         auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
         check_notifications(counter, notifications)
-        print(f"Counter: {counter} (Last modified: {last_modified})")
+        print(f"{messages['counter']}{counter}{messages['last_modified_time']}{last_modified})")
 
 if __name__ == "__main__":
     main()
