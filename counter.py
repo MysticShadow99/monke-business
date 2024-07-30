@@ -92,6 +92,8 @@ def parse_arguments():
     parser.add_argument("--notification", nargs=2, action='append', help="Set notifications in the format 'value message'")
     parser.add_argument("--show_settings", action='store_true', help="Show current settings")
     parser.add_argument("--language", type=str, help="Set language for messages (en/ru)")
+    parser.add_argument("--command", type=str, choices=['increment', 'decrement', 'reset', 'set'], help="Command to execute")
+    parser.add_argument("--value", type=int, help="Value to set the counter to (for 'set' command)")
     return parser.parse_args()
 
 def load_config_from_file(config_file):
@@ -153,73 +155,78 @@ def main():
     notifications = {int(k): v for k, v in args.notification} if args.notification else config.get("notifications", {})
 
     settings = {"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications, "language": language}
-
-    if args.show_settings:
-        display_settings(settings)
-        return
-
-    counter = get_valid_integer(messages["set_starting_value"]) if input("Set starting value for counter? (y/n): ").strip().lower() == 'y' else int(load_from_file(counter_file))
+    counter = int(load_from_file(counter_file)) if os.path.exists(counter_file) else int(input(messages["set_starting_value"]))
     history, all_counters = load_history(history_file), load_all_counters(all_counters_file) or [counter]
-    previous_counters, last_modified = [], datetime.datetime.now()
 
     save_settings(settings)
     periodic_backup(backup_interval, counter, history, all_counters, counter_file, history_file, all_counters_file)
 
     actions = {
-        'i': ("Increment", increment),
-        'd': ("Decrement", decrement),
-        'r': ("Reset", reset),
-        's': ("Set counter to", lambda _: get_valid_integer(messages["set_starting_value"]))
+        'increment': ("Increment", increment),
+        'decrement': ("Decrement", decrement),
+        'reset': ("Reset", reset),
+        'set': ("Set counter to", set_counter)
     }
 
-    while True:
-        action = input(messages["enter_action"]).strip().lower()
-        if action in actions:
-            previous_counters.append(counter)
-            action_name, action_func = actions[action]
-            counter = action_func(counter)
+    if args.command:
+        if args.command in actions:
+            action_name, action_func = actions[args.command]
+            if args.command == 'set' and args.value is not None:
+                counter = action_func(args.value)
+            else:
+                counter = action_func(counter)
             history.append(f"{action_name} at {datetime.datetime.now()}")
             all_counters.append(counter)
-            last_modified = datetime.datetime.now()
-        elif action == 'h':
-            print(messages["history"] + "\n".join(history))
-        elif action == 'a':
-            print(messages["all_values"] + "\n".join(map(str, all_counters)))
-        elif action == 't':
-            print(messages["last_modified"] + str(last_modified))
-        elif action == 'u':
-            counter = previous_counters.pop() if previous_counters else counter
-            history.append(f"Undo at {datetime.datetime.now()}")
-            all_counters.append(counter)
-            last_modified = datetime.datetime.now()
-        elif action == 'e':
-            export_to_csv(all_counters, history, input("Enter filename for the CSV export (default: export.csv): ").strip() or "export.csv")
-            print(messages["data_exported"])
-        elif action == 'j':
-            export_to_json(all_counters, history, input("Enter filename for the JSON export (default: export.json): ").strip() or "export.json")
-            print(messages["data_exported"])
-        elif action == 'k':
-            filename = input("Enter filename to import from JSON (default: import.json): ").strip() or "import.json"
-            all_counters, history = import_from_json(filename)
-            counter = all_counters[-1] if all_counters else 0
-            print(messages["data_imported"])
-        elif action == 'p':
-            print_stats(history)
-        elif action == 'c':
-            save_history([], history_file)
-            history = []
-            print(messages["history_cleared"])
-        elif action == 'f':
-            display_settings(settings)
-        elif action == 'q':
             auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
-            break
+            print(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
         else:
             print(messages["invalid_input_action"])
+    else:
+        while True:
+            action = input(messages["enter_action"]).strip().lower()
+            if action in actions:
+                action_name, action_func = actions[action]
+                counter = action_func(counter)
+                history.append(f"{action_name} at {datetime.datetime.now()}")
+                all_counters.append(counter)
+            elif action == 'h':
+                print(messages["history"] + "\n".join(history))
+            elif action == 'a':
+                print(messages["all_values"] + "\n".join(map(str, all_counters)))
+            elif action == 't':
+                print(messages["last_modified"] + str(datetime.datetime.now()))
+            elif action == 'u':
+                counter = all_counters[-2] if len(all_counters) > 1 else counter
+                history.append(f"Undo at {datetime.datetime.now()}")
+                all_counters.append(counter)
+            elif action == 'e':
+                export_to_csv(all_counters, history, input("Enter filename for the CSV export (default: export.csv): ").strip() or "export.csv")
+                print(messages["data_exported"])
+            elif action == 'j':
+                export_to_json(all_counters, history, input("Enter filename for the JSON export (default: export.json): ").strip() or "export.json")
+                print(messages["data_exported"])
+            elif action == 'k':
+                filename = input("Enter filename to import from JSON (default: import.json): ").strip() or "import.json"
+                all_counters, history = import_from_json(filename)
+                counter = all_counters[-1] if all_counters else 0
+                print(messages["data_imported"])
+            elif action == 'p':
+                print_stats(history)
+            elif action == 'c':
+                save_history([], history_file)
+                history = []
+                print(messages["history_cleared"])
+            elif action == 'f':
+                display_settings(settings)
+            elif action == 'q':
+                auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
+                break
+            else:
+                print(messages["invalid_input_action"])
 
-        auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
-        check_notifications(counter, notifications)
-        print(f"{messages['counter']}{counter}{messages['last_modified_time']}{last_modified})")
+            auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
+            check_notifications(counter, notifications)
+            print(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
 
 if __name__ == "__main__":
     main()
