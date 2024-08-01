@@ -6,6 +6,7 @@ import shutil
 import threading
 import json
 import argparse
+import curses
 
 def increment(counter): return counter + 1
 def decrement(counter): return counter - 1
@@ -63,7 +64,7 @@ def backup_file(filename, max_backups):
 
 def print_stats(history):
     counts = {action: sum(1 for record in history if record.startswith(action)) for action in ["Increment", "Decrement", "Reset", "Set counter to"]}
-    print(f"Statistics:\nIncrements: {counts['Increment']}\nDecrements: {counts['Decrement']}\nResets: {counts['Reset']}\nSets: {counts['Set counter to']}")
+    return f"Statistics:\nIncrements: {counts['Increment']}\nDecrements: {counts['Decrement']}\nResets: {counts['Reset']}\nSets: {counts['Set counter to']}"
 
 def periodic_backup(interval, counter, history, all_counters, counter_file, history_file, all_counters_file):
     def backup():
@@ -99,51 +100,14 @@ def parse_arguments():
 def load_config_from_file(config_file):
     with open(config_file, "r") as f: return json.load(f)
 
-def display_settings(settings):
-    print("Current settings:")
+def display_settings(settings, stdscr):
+    stdscr.addstr("Current settings:\n")
     for key, value in settings.items():
-        print(f"{key}: {value}")
+        stdscr.addstr(f"{key}: {value}\n")
+    stdscr.refresh()
+    stdscr.getch()
 
-def load_messages(language):
-    messages = {
-        "en": {
-            "set_starting_value": "Enter the starting value for the counter: ",
-            "invalid_input": "Invalid input. Please enter a valid integer.",
-            "enter_action": "Enter 'i' to increment, 'd' to decrement, 'r' to reset, 's' to set counter to a specific value, 'h' to view history, 'a' to view all counter values, 't' to view last modified time, 'u' to undo last action, 'e' to export to CSV, 'j' to export to JSON, 'k' to import from JSON, 'p' to view statistics, 'c' to clear history, 'f' to view settings, or 'q' to quit: ",
-            "invalid_input_action": "Invalid input.",
-            "history": "History:\n",
-            "all_values": "All counter values:\n",
-            "last_modified": "Last modified time: ",
-            "data_exported": "Data exported.",
-            "data_imported": "Data imported.",
-            "history_cleared": "History cleared.",
-            "counter": "Counter: ",
-            "last_modified_time": " (Last modified: ",
-            "periodic_backup": "Periodic backup completed at ",
-            "notification": "Notification: ",
-            "current_settings": "Current settings:",
-        },
-        "ru": {
-            "set_starting_value": "Введите начальное значение для счетчика: ",
-            "invalid_input": "Неверный ввод. Пожалуйста, введите действительное целое число.",
-            "enter_action": "Введите 'i' для увеличения, 'd' для уменьшения, 'r' для сброса, 's' для установки конкретного значения, 'h' для просмотра истории, 'a' для просмотра всех значений счетчика, 't' для просмотра времени последнего изменения, 'u' для отмены последнего действия, 'e' для экспорта в CSV, 'j' для экспорта в JSON, 'k' для импорта из JSON, 'p' для просмотра статистики, 'c' для очистки истории, 'f' для просмотра настроек или 'q' для выхода: ",
-            "invalid_input_action": "Неверный ввод.",
-            "history": "История:\n",
-            "all_values": "Все значения счетчика:\n",
-            "last_modified": "Время последнего изменения: ",
-            "data_exported": "Данные экспортированы.",
-            "data_imported": "Данные импортированы.",
-            "history_cleared": "История очищена.",
-            "counter": "Счетчик: ",
-            "last_modified_time": " (Последнее изменение: ",
-            "periodic_backup": "Периодическое резервное копирование выполнено в ",
-            "notification": "Уведомление: ",
-            "current_settings": "Текущие настройки:",
-        }
-    }
-    return messages.get(language, messages["en"])
-
-def main():
+def main(stdscr):
     args = parse_arguments()
     config = load_config_from_file(args.config) if args.config else {}
     language = args.language or config.get("language", "en")
@@ -178,55 +142,59 @@ def main():
             history.append(f"{action_name} at {datetime.datetime.now()}")
             all_counters.append(counter)
             auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
-            print(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
+            stdscr.addstr(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})\n")
+            stdscr.refresh()
         else:
-            print(messages["invalid_input_action"])
+            stdscr.addstr(messages["invalid_input_action"] + "\n")
+            stdscr.refresh()
     else:
         while True:
-            action = input(messages["enter_action"]).strip().lower()
+            stdscr.addstr(messages["enter_action"])
+            stdscr.refresh()
+            action = stdscr.getstr().decode().strip().lower()
             if action in actions:
                 action_name, action_func = actions[action]
                 counter = action_func(counter)
                 history.append(f"{action_name} at {datetime.datetime.now()}")
                 all_counters.append(counter)
             elif action == 'h':
-                print(messages["history"] + "\n".join(history))
+                stdscr.addstr(messages["history"] + "\n" + "\n".join(history) + "\n")
             elif action == 'a':
-                print(messages["all_values"] + "\n".join(map(str, all_counters)))
+                stdscr.addstr(messages["all_values"] + "\n" + "\n".join(map(str, all_counters)) + "\n")
             elif action == 't':
-                print(messages["last_modified"] + str(datetime.datetime.now()))
+                stdscr.addstr(messages["last_modified"] + str(datetime.datetime.now()) + "\n")
             elif action == 'u':
                 counter = all_counters[-2] if len(all_counters) > 1 else counter
                 history.append(f"Undo at {datetime.datetime.now()}")
                 all_counters.append(counter)
             elif action == 'e':
                 export_to_csv(all_counters, history, input("Enter filename for the CSV export (default: export.csv): ").strip() or "export.csv")
-                print(messages["data_exported"])
+                stdscr.addstr(messages["data_exported"] + "\n")
             elif action == 'j':
                 export_to_json(all_counters, history, input("Enter filename for the JSON export (default: export.json): ").strip() or "export.json")
-                print(messages["data_exported"])
+                stdscr.addstr(messages["data_exported"] + "\n")
             elif action == 'k':
                 filename = input("Enter filename to import from JSON (default: import.json): ").strip() or "import.json"
                 all_counters, history = import_from_json(filename)
                 counter = all_counters[-1] if all_counters else 0
-                print(messages["data_imported"])
+                stdscr.addstr(messages["data_imported"] + "\n")
             elif action == 'p':
-                print_stats(history)
+                stdscr.addstr(print_stats(history) + "\n")
             elif action == 'c':
                 save_history([], history_file)
                 history = []
-                print(messages["history_cleared"])
+                stdscr.addstr(messages["history_cleared"] + "\n")
             elif action == 'f':
-                display_settings(settings)
+                display_settings(settings, stdscr)
             elif action == 'q':
                 auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
                 break
             else:
-                print(messages["invalid_input_action"])
+                stdscr.addstr(messages["invalid_input_action"] + "\n")
 
             auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
             check_notifications(counter, notifications)
-            print(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
+            stdscr.addstr(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})\n")
 
 if __name__ == "__main__":
-    main()
+    curses.wrapper(main)
