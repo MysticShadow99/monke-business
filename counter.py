@@ -7,6 +7,9 @@ import threading
 import json
 import argparse
 import curses
+import logging
+
+logging.basicConfig(filename='counter.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 def increment(counter): return counter + 1
 def decrement(counter): return counter - 1
@@ -70,12 +73,12 @@ def periodic_backup(interval, counter, history, all_counters, counter_file, hist
     def backup():
         while True:
             auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
-            print(f"Periodic backup completed at {datetime.datetime.now()}")
+            logging.info(f"Periodic backup completed")
             threading.Event().wait(interval)
     threading.Thread(target=backup, daemon=True).start()
 
 def check_notifications(counter, notifications):
-    if counter in notifications: print(f"Notification: {notifications[counter]}")
+    if counter in notifications: logging.info(f"Notification: {notifications[counter]}")
 
 def save_settings(settings, filename="settings.json"):
     with open(filename, "w") as f: json.dump(settings, f)
@@ -144,6 +147,7 @@ def main(stdscr):
             auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
             stdscr.addstr(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})\n")
             stdscr.refresh()
+            logging.info(f"{action_name} performed, counter: {counter}")
         else:
             stdscr.addstr(messages["invalid_input_action"] + "\n")
             stdscr.refresh()
@@ -157,6 +161,7 @@ def main(stdscr):
                 counter = action_func(counter)
                 history.append(f"{action_name} at {datetime.datetime.now()}")
                 all_counters.append(counter)
+                logging.info(f"{action_name} performed, counter: {counter}")
             elif action == 'h':
                 stdscr.addstr(messages["history"] + "\n" + "\n".join(history) + "\n")
             elif action == 'a':
@@ -167,6 +172,7 @@ def main(stdscr):
                 counter = all_counters[-2] if len(all_counters) > 1 else counter
                 history.append(f"Undo at {datetime.datetime.now()}")
                 all_counters.append(counter)
+                logging.info(f"Undo performed, counter: {counter}")
             elif action == 'e':
                 export_to_csv(all_counters, history, input("Enter filename for the CSV export (default: export.csv): ").strip() or "export.csv")
                 stdscr.addstr(messages["data_exported"] + "\n")
@@ -178,16 +184,19 @@ def main(stdscr):
                 all_counters, history = import_from_json(filename)
                 counter = all_counters[-1] if all_counters else 0
                 stdscr.addstr(messages["data_imported"] + "\n")
+                logging.info(f"Data imported from {filename}")
             elif action == 'p':
                 stdscr.addstr(print_stats(history) + "\n")
             elif action == 'c':
                 save_history([], history_file)
                 history = []
                 stdscr.addstr(messages["history_cleared"] + "\n")
+                logging.info("History cleared")
             elif action == 'f':
                 display_settings(settings, stdscr)
             elif action == 'q':
                 auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
+                logging.info("Program terminated")
                 break
             else:
                 stdscr.addstr(messages["invalid_input_action"] + "\n")
