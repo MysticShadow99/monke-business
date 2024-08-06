@@ -61,9 +61,11 @@ def auto_save(counter, history, all_counters, counter_file, history_file, all_co
 def backup_file(filename, max_backups):
     if os.path.exists(filename):
         timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        shutil.copy(filename, f"{filename}_{timestamp}.bak")
-        backups = sorted(f for f in os.listdir() if f.startswith(filename) and f.endswith(".bak"))
+        backup_filename = f"{filename}_{timestamp}.bak"
+        shutil.copy(filename, backup_filename)
+        backups = sorted((f for f in os.listdir() if f.startswith(filename) and f.endswith(".bak")), key=os.path.getmtime)
         for old_backup in backups[:-max_backups]: os.remove(old_backup)
+        logging.info(f"Backup created: {backup_filename}")
 
 def print_stats(history):
     counts = {action: sum(1 for record in history if record.startswith(action)) for action in ["Increment", "Decrement", "Reset", "Set counter to"]}
@@ -195,15 +197,4 @@ def main(stdscr):
             elif action == 'f':
                 display_settings(settings, stdscr)
             elif action == 'q':
-                auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
-                logging.info("Program terminated")
-                break
-            else:
-                stdscr.addstr(messages["invalid_input_action"] + "\n")
-
-            auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
-            check_notifications(counter, notifications)
-            stdscr.addstr(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})\n")
-
-if __name__ == "__main__":
-    curses.wrapper(main)
+                auto_save(counter, history, all_counters, counter_file,
