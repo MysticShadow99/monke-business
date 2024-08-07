@@ -112,6 +112,30 @@ def display_settings(settings, stdscr):
     stdscr.refresh()
     stdscr.getch()
 
+def display_help(stdscr):
+    help_text = """
+Available commands:
+  increment      - Increment the counter
+  decrement      - Decrement the counter
+  reset          - Reset the counter to 0
+  set <value>    - Set the counter to a specific value
+  h              - Show history
+  a              - Show all counter values
+  t              - Show last modified time
+  u              - Undo last action
+  e              - Export data to CSV
+  j              - Export data to JSON
+  k              - Import data from JSON
+  p              - Print statistics
+  c              - Clear history
+  f              - Show current settings
+  q              - Quit the program
+  help           - Show this help menu
+"""
+    stdscr.addstr(help_text + "\n")
+    stdscr.refresh()
+    stdscr.getch()
+
 def main(stdscr):
     args = parse_arguments()
     config = load_config_from_file(args.config) if args.config else {}
@@ -196,5 +220,18 @@ def main(stdscr):
                 logging.info("History cleared")
             elif action == 'f':
                 display_settings(settings, stdscr)
+            elif action == 'help':
+                display_help(stdscr)
             elif action == 'q':
-                auto_save(counter, history, all_counters, counter_file,
+                auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
+                logging.info("Program terminated")
+                break
+            else:
+                stdscr.addstr(messages["invalid_input_action"] + "\n")
+
+            auto_save(counter, history, all_counters, counter_file, history_file, all_counters_file)
+            check_notifications(counter, notifications)
+            stdscr.addstr(f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})\n")
+
+if __name__ == "__main__":
+    curses.wrapper(main)
