@@ -45,6 +45,10 @@ def import_from_json(filename):
         counter_values = [item["Counter Value"] for item in data]
     return counter_values, history
 
+def get_filename(prompt, default):
+    filename = input(prompt).strip()
+    return filename if filename else default
+
 def get_valid_integer(prompt):
     while True:
         try: return int(input(prompt))
@@ -176,12 +180,11 @@ def main(stdscr):
             logging.info(f"{action_name} performed, counter: {counter}")
         else:
             stdscr.addstr(messages["invalid_input_action"] + "\n")
-            stdscr.refresh()
     else:
         while True:
-            stdscr.addstr(messages["enter_action"])
-            stdscr.refresh()
-            action = stdscr.getstr().decode().strip().lower()
+            stdscr.clear()
+            stdscr.addstr(messages["menu"])
+            action = stdscr.getkey().strip().lower()
             if action in actions:
                 action_name, action_func = actions[action]
                 counter = action_func(counter)
@@ -200,13 +203,13 @@ def main(stdscr):
                 all_counters.append(counter)
                 logging.info(f"Undo performed, counter: {counter}")
             elif action == 'e':
-                export_to_csv(all_counters, history, input("Enter filename for the CSV export (default: export.csv): ").strip() or "export.csv")
+                export_to_csv(all_counters, history, get_filename("Enter filename for the CSV export (default: export.csv): ", "export.csv"))
                 stdscr.addstr(messages["data_exported"] + "\n")
             elif action == 'j':
-                export_to_json(all_counters, history, input("Enter filename for the JSON export (default: export.json): ").strip() or "export.json")
+                export_to_json(all_counters, history, get_filename("Enter filename for the JSON export (default: export.json): ", "export.json"))
                 stdscr.addstr(messages["data_exported"] + "\n")
             elif action == 'k':
-                filename = input("Enter filename to import from JSON (default: import.json): ").strip() or "import.json"
+                filename = get_filename("Enter filename to import from JSON (default: import.json): ", "import.json")
                 all_counters, history = import_from_json(filename)
                 counter = all_counters[-1] if all_counters else 0
                 stdscr.addstr(messages["data_imported"] + "\n")
