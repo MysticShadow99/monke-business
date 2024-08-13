@@ -1,40 +1,36 @@
 # counter.py
 
+import json
+
+def save_config_to_file(config, filename):
+    with open(filename, "w") as config_file:
+        json.dump(config, config_file, indent=4)
+
+def load_config_from_file(filename):
+    try:
+        with open(filename, "r") as config_file:
+            return json.load(config_file)
+    except FileNotFoundError:
+        print(f"Configuration file {filename} not found.")
+        return {}
+
+# Добавим новую опцию в аргументы командной строки для сохранения настроек:
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Counter script with auto-save and notifications.")
-    parser.add_argument("--config", type=str, help="Filename of the configuration file")
-    parser.add_argument("--counter_file", type=str, help="Filename to save counter value")
-    parser.add_argument("--history_file", type=str, help="Filename to save history")
-    parser.add_argument("--all_counters_file", type=str, help="Filename to save all counter values")
-    parser.add_argument("--backup_interval", type=int, help="Backup interval in seconds")
-    parser.add_argument("--notification", nargs=2, action='append', help="Set notifications in the format 'value message'")
-    parser.add_argument("--show_settings", action='store_true', help="Show current settings")
-    parser.add_argument("--language", type=str, help="Set language for messages (en/ru)")
-    parser.add_argument("--command", type=str, choices=['increment', 'decrement', 'reset', 'set'], help="Command to execute")
-    parser.add_argument("--value", type=int, help="Value to set the counter to (for 'set' command)")
-    parser.add_argument("--backup", action='store_true', help="Create backups of all data files")
+    parser.add_argument("--config", type=str, help="Filename of the configuration file to load")
+    parser.add_argument("--save_config", type=str, help="Filename to save current configuration")
+    # ... другие аргументы ...
     return parser.parse_args()
 
-# Добавим проверку в основной функции, чтобы при наличии флага --backup скрипт создал резервные копии:
+# В основном коде добавим логику для сохранения конфигурации:
 def main(stdscr):
     args = parse_arguments()
     config = load_config_from_file(args.config) if args.config else {}
     apply_command_line_args(args, config)
 
-    if args.backup:
-        backup_file(config["counter_file"], 5)
-        backup_file(config["history_file"], 5)
-        backup_file(config["all_counters_file"], 5)
-        print("Backup completed.")
+    if args.save_config:
+        save_config_to_file(config, args.save_config)
+        print(f"Configuration saved to {args.save_config}.")
         return
 
-    language = config.get("language", "en")
-    messages = load_messages(language)
-    counter_file = config.get("counter_file", "counter.txt")
-    history_file = config.get("history_file", "history.txt")
-    all_counters_file = config.get("all_counters_file", "all_counters.txt")
-    backup_interval = config.get("backup_interval", 600)
-    notifications = config.get("notifications", {})
-
-    settings = {"counter_file": counter_file, "history_file": history_file, "all_counters_file": all_counters_file, "backup_interval": backup_interval, "notifications": notifications, "language": language}
-    ...
+    # ... остальной код ...
