@@ -1,5 +1,21 @@
 # counter.py
 
+def handle_file_operation(operation, filename, data=None):
+    if operation == "save":
+        with open(filename, "w") as file:
+            file.write(data)
+    elif operation == "backup":
+        backup_filename = filename + ".bak"
+        with open(filename, "r") as original, open(backup_filename, "w") as backup:
+            backup.write(original.read())
+    elif operation == "load":
+        try:
+            with open(filename, "r") as file:
+                return file.read()
+        except FileNotFoundError:
+            return ""
+
+# Применение новой функции в основном коде:
 def main(stdscr):
     args = parse_arguments()
     config = load_config_from_file(args.config) if args.config else {}
@@ -35,12 +51,16 @@ def main(stdscr):
             actions[action]()
             display_message(stdscr, messages["data_exported"])
         elif action == 'q':
-            auto_save(counter, history, all_counters, settings["counter_file"], settings["history_file"], settings["all_counters_file"])
+            handle_file_operation("save", settings["counter_file"], counter)
+            handle_file_operation("save", settings["history_file"], history)
+            handle_file_operation("save", settings["all_counters_file"], all_counters)
             logging.info("Program terminated")
             break
         else:
             display_message(stdscr, messages["invalid_input_action"])
 
-        auto_save(counter, history, all_counters, settings["counter_file"], settings["history_file"], settings["all_counters_file"])
+        handle_file_operation("save", settings["counter_file"], counter)
+        handle_file_operation("save", settings["history_file"], history)
+        handle_file_operation("save", settings["all_counters_file"], all_counters)
         check_notifications(counter, settings["notifications"])
         display_message(stdscr, f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
