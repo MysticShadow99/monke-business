@@ -1,25 +1,18 @@
 # counter.py
 
-def handle_file_operation(operation, filename, data=None):
-    if operation == "save":
-        with open(filename, "w") as file:
-            file.write(data)
-    elif operation == "backup":
-        backup_filename = filename + ".bak"
-        with open(filename, "r") as original, open(backup_filename, "w") as backup:
-            backup.write(original.read())
-    elif operation == "load":
-        try:
-            with open(filename, "r") as file:
-                return file.read()
-        except FileNotFoundError:
-            return ""
+def load_and_apply_config(args):
+    config = load_config_from_file(args.config) if args.config else {}
 
-# Применение новой функции в основном коде:
+    # Применение командных аргументов, если они заданы
+    for key in vars(args):
+        if getattr(args, key) is not None:
+            config[key] = getattr(args, key)
+    
+    return config
+
 def main(stdscr):
     args = parse_arguments()
-    config = load_config_from_file(args.config) if args.config else {}
-    apply_command_line_args(args, config)
+    config = load_and_apply_config(args)
 
     if args.show_settings:
         show_settings(config)
