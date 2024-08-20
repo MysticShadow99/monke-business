@@ -1,14 +1,9 @@
 # counter.py
 
-def load_and_apply_config(args):
-    config = load_config_from_file(args.config) if args.config else {}
-
-    # Применение командных аргументов, если они заданы
-    for key in vars(args):
-        if getattr(args, key) is not None:
-            config[key] = getattr(args, key)
-    
-    return config
+def display_and_get_input(stdscr, message):
+    stdscr.clear()
+    stdscr.addstr(message)
+    return stdscr.getkey().strip().lower()
 
 def main(stdscr):
     args = parse_arguments()
@@ -36,9 +31,7 @@ def main(stdscr):
     }
 
     while True:
-        stdscr.clear()
-        stdscr.addstr(messages["menu"])
-        action = stdscr.getkey().strip().lower()
+        action = display_and_get_input(stdscr, messages["menu"])
 
         if action in actions:
             actions[action]()
