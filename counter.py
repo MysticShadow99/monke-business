@@ -1,9 +1,9 @@
 # counter.py
 
-def display_and_get_input(stdscr, message):
-    stdscr.clear()
-    stdscr.addstr(message)
-    return stdscr.getkey().strip().lower()
+def save_all_data(settings, counter, history, all_counters):
+    handle_file_operation("save", settings["counter_file"], counter)
+    handle_file_operation("save", settings["history_file"], history)
+    handle_file_operation("save", settings["all_counters_file"], all_counters)
 
 def main(stdscr):
     args = parse_arguments()
@@ -37,16 +37,12 @@ def main(stdscr):
             actions[action]()
             display_message(stdscr, messages["data_exported"])
         elif action == 'q':
-            handle_file_operation("save", settings["counter_file"], counter)
-            handle_file_operation("save", settings["history_file"], history)
-            handle_file_operation("save", settings["all_counters_file"], all_counters)
+            save_all_data(settings, counter, history, all_counters)
             logging.info("Program terminated")
             break
         else:
             display_message(stdscr, messages["invalid_input_action"])
 
-        handle_file_operation("save", settings["counter_file"], counter)
-        handle_file_operation("save", settings["history_file"], history)
-        handle_file_operation("save", settings["all_counters_file"], all_counters)
+        save_all_data(settings, counter, history, all_counters)
         check_notifications(counter, settings["notifications"])
         display_message(stdscr, f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
