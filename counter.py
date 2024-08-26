@@ -1,9 +1,9 @@
 # counter.py
 
-def save_all_data(settings, counter, history, all_counters):
-    handle_file_operation("save", settings["counter_file"], counter)
-    handle_file_operation("save", settings["history_file"], history)
-    handle_file_operation("save", settings["all_counters_file"], all_counters)
+def process_notifications_and_display(stdscr, counter, settings, messages):
+    save_all_data(settings, counter, history, all_counters)
+    check_notifications(counter, settings["notifications"])
+    display_message(stdscr, f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
 
 def main(stdscr):
     args = parse_arguments()
@@ -43,6 +43,4 @@ def main(stdscr):
         else:
             display_message(stdscr, messages["invalid_input_action"])
 
-        save_all_data(settings, counter, history, all_counters)
-        check_notifications(counter, settings["notifications"])
-        display_message(stdscr, f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
+        process_notifications_and_display(stdscr, counter, settings, messages)
