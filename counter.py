@@ -1,19 +1,7 @@
 # counter.py
 
-def process_notifications_and_display(stdscr, counter, settings, messages):
-    save_all_data(settings, counter, history, all_counters)
-    check_notifications(counter, settings["notifications"])
-    display_message(stdscr, f"{messages['counter']}{counter}{messages['last_modified_time']}{datetime.datetime.now()})")
-
-def main(stdscr):
-    args = parse_arguments()
-    config = load_and_apply_config(args)
-
-    if args.show_settings:
-        show_settings(config)
-        return
-
-    settings = {
+def get_settings(config):
+    return {
         "language": config.get("language", "en"),
         "counter_file": config.get("counter_file", "counter.txt"),
         "history_file": config.get("history_file", "history.txt"),
@@ -21,6 +9,15 @@ def main(stdscr):
         "backup_interval": config.get("backup_interval", 600),
         "notifications": config.get("notifications", {})
     }
+
+def main(stdscr):
+    args = parse_arguments()
+    config = load_and_apply_config(args)
+    settings = get_settings(config)
+
+    if args.show_settings:
+        show_settings(config)
+        return
 
     messages = load_messages(settings["language"])
 
