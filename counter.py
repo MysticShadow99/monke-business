@@ -1,15 +1,14 @@
 # counter.py
 
-def execute_action(stdscr, action, actions, messages):
-    if action in actions:
-        actions[action]()
-        display_message(stdscr, messages["data_exported"])
-    elif action == 'q':
-        logging.info("Program terminated")
-        return False
-    else:
-        display_message(stdscr, messages["invalid_input_action"])
-    return True
+def handle_file_operations(operation, settings, counter, history, all_counters):
+    files = {
+        "counter_file": counter,
+        "history_file": history,
+        "all_counters_file": all_counters
+    }
+    
+    for file_key, data in files.items():
+        handle_file_operation(operation, settings[file_key], data)
 
 def main(stdscr):
     args = parse_arguments()
@@ -26,7 +25,7 @@ def main(stdscr):
         'e': lambda: export_data(all_counters, history, get_filename("Enter filename for the CSV export (default: export.csv): ", "export.csv"), "csv"),
         'j': lambda: export_data(all_counters, history, get_filename("Enter filename for the JSON export (default: export.json): ", "export.json"), "json"),
         'k': lambda: import_data(config, get_filename("Enter filename to import from JSON (default: import.json): ", "import.json")),
-        'q': lambda: save_all_data(settings, counter, history, all_counters)
+        'q': lambda: handle_file_operations("save", settings, counter, history, all_counters)
     }
 
     while True:
