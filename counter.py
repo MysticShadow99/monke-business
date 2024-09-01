@@ -1,14 +1,10 @@
 # counter.py
 
-def handle_file_operations(operation, settings, counter, history, all_counters):
-    files = {
-        "counter_file": counter,
-        "history_file": history,
-        "all_counters_file": all_counters
-    }
-    
-    for file_key, data in files.items():
-        handle_file_operation(operation, settings[file_key], data)
+def show_message(stdscr, text, should_clear=True):
+    if should_clear:
+        stdscr.clear()
+    stdscr.addstr(text)
+    stdscr.refresh()
 
 def main(stdscr):
     args = parse_arguments()
