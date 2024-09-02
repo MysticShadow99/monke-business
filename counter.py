@@ -1,10 +1,17 @@
 # counter.py
 
-def show_message(stdscr, text, should_clear=True):
-    if should_clear:
-        stdscr.clear()
-    stdscr.addstr(text)
-    stdscr.refresh()
+def handle_user_input(stdscr, messages, actions):
+    action = display_and_get_input(stdscr, messages["menu"])
+
+    if action in actions:
+        actions[action]()
+        show_message(stdscr, messages["data_exported"])
+    elif action == 'q':
+        logging.info("Program terminated")
+        return False
+    else:
+        show_message(stdscr, messages["invalid_input_action"])
+    return True
 
 def main(stdscr):
     args = parse_arguments()
@@ -25,9 +32,7 @@ def main(stdscr):
     }
 
     while True:
-        action = display_and_get_input(stdscr, messages["menu"])
-
-        if not execute_action(stdscr, action, actions, messages):
+        if not handle_user_input(stdscr, messages, actions):
             break
 
         process_notifications_and_display(stdscr, counter, settings, messages)
