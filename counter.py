@@ -1,17 +1,12 @@
 # counter.py
 
-def handle_user_input(stdscr, messages, actions):
-    action = display_and_get_input(stdscr, messages["menu"])
-
-    if action in actions:
-        actions[action]()
-        show_message(stdscr, messages["data_exported"])
-    elif action == 'q':
-        logging.info("Program terminated")
-        return False
-    else:
-        show_message(stdscr, messages["invalid_input_action"])
-    return True
+def handle_data_operation(operation, filetype, all_counters, history, messages):
+    filename = get_filename(f"Enter filename for the {filetype.upper()} {operation} (default: {operation}.{filetype}): ", f"{operation}.{filetype}")
+    if operation == 'export':
+        export_data(all_counters, history, filename, filetype)
+    elif operation == 'import':
+        import_data(config, filename)
+    show_message(stdscr, messages["data_exported"])
 
 def main(stdscr):
     args = parse_arguments()
@@ -25,9 +20,9 @@ def main(stdscr):
     messages = load_messages(settings["language"])
 
     actions = {
-        'e': lambda: export_data(all_counters, history, get_filename("Enter filename for the CSV export (default: export.csv): ", "export.csv"), "csv"),
-        'j': lambda: export_data(all_counters, history, get_filename("Enter filename for the JSON export (default: export.json): ", "export.json"), "json"),
-        'k': lambda: import_data(config, get_filename("Enter filename to import from JSON (default: import.json): ", "import.json")),
+        'e': lambda: handle_data_operation('export', 'csv', all_counters, history, messages),
+        'j': lambda: handle_data_operation('export', 'json', all_counters, history, messages),
+        'k': lambda: handle_data_operation('import', 'json', all_counters, history, messages),
         'q': lambda: handle_file_operations("save", settings, counter, history, all_counters)
     }
 
