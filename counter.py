@@ -1,12 +1,10 @@
 # counter.py
 
-def handle_data_operation(operation, filetype, all_counters, history, messages):
-    filename = get_filename(f"Enter filename for the {filetype.upper()} {operation} (default: {operation}.{filetype}): ", f"{operation}.{filetype}")
-    if operation == 'export':
-        export_data(all_counters, history, filename, filetype)
-    elif operation == 'import':
-        import_data(config, filename)
-    show_message(stdscr, messages["data_exported"])
+def process_and_display_notifications(stdscr, counter, settings, messages):
+    notifications = settings.get("notifications", {})
+    for threshold, message in notifications.items():
+        if counter >= threshold:
+            show_message(stdscr, message.format(counter=counter), should_clear=False)
 
 def main(stdscr):
     args = parse_arguments()
@@ -30,4 +28,4 @@ def main(stdscr):
         if not handle_user_input(stdscr, messages, actions):
             break
 
-        process_notifications_and_display(stdscr, counter, settings, messages)
+        process_and_display_notifications(stdscr, counter, settings, messages)
