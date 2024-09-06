@@ -1,10 +1,10 @@
-# counter.py
-
-def process_and_display_notifications(stdscr, counter, settings, messages):
-    notifications = settings.get("notifications", {})
-    for threshold, message in notifications.items():
-        if counter >= threshold:
-            show_message(stdscr, message.format(counter=counter), should_clear=False)
+def handle_file(operation, filepath, data=None):
+    if operation == "load":
+        with open(filepath, 'r') as file:
+            return file.read()
+    elif operation == "save" and data:
+        with open(filepath, 'w') as file:
+            file.write(data)
 
 def main(stdscr):
     args = parse_arguments()
