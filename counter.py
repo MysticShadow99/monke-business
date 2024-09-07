@@ -1,15 +1,15 @@
-def handle_file(operation, filepath, data=None):
-    if operation == "load":
-        with open(filepath, 'r') as file:
-            return file.read()
-    elif operation == "save" and data:
-        with open(filepath, 'w') as file:
-            file.write(data)
+# counter.py
+
+def manage_settings(config, action, key=None, value=None):
+    if action == "load":
+        return config.get(key) if key else config
+    elif action == "update" and key:
+        config[key] = value
 
 def main(stdscr):
     args = parse_arguments()
     config = load_and_apply_config(args)
-    settings = get_settings(config)
+    settings = manage_settings(config, "load")
 
     if args.show_settings:
         show_settings(config)
