@@ -1,13 +1,11 @@
 # counter.py
 
-def load_config_with_args(args):
-    config = load_and_apply_config(args)
-    settings = manage_settings(config, "load")
-
-    if args.show_settings:
-        show_settings(config)
-        return None
-    return settings
+def execute_action(action_key, actions, messages):
+    if action_key in actions:
+        actions[action_key]()
+        show_message(stdscr, messages["data_exported"])
+    else:
+        show_message(stdscr, messages["invalid_input_action"])
 
 def main(stdscr):
     args = parse_arguments()
@@ -26,7 +24,8 @@ def main(stdscr):
     }
 
     while True:
-        if not handle_user_input(stdscr, messages, actions):
+        action_key = display_and_get_input(stdscr, messages["menu"])
+        if not execute_action(action_key, actions, messages):
             break
 
         process_and_display_notifications(stdscr, counter, settings, messages)
