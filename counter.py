@@ -1,11 +1,19 @@
 # counter.py
 
+def display_message(stdscr, message_type, messages):
+    if message_type == "data_exported":
+        show_message(stdscr, messages["data_exported"])
+    elif message_type == "invalid_input":
+        show_message(stdscr, messages["invalid_input_action"])
+    else:
+        show_message(stdscr, messages[message_type])
+
 def execute_action(action_key, actions, messages):
     if action_key in actions:
         actions[action_key]()
-        show_message(stdscr, messages["data_exported"])
+        display_message(stdscr, "data_exported", messages)
     else:
-        show_message(stdscr, messages["invalid_input_action"])
+        display_message(stdscr, "invalid_input", messages)
 
 def main(stdscr):
     args = parse_arguments()
