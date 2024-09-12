@@ -1,14 +1,7 @@
 # counter.py
 
-def display_message(stdscr, message_type, messages):
-    if message_type == "data_exported":
-        show_message(stdscr, messages["data_exported"])
-    elif message_type == "invalid_input":
-        show_message(stdscr, messages["invalid_input_action"])
-    else:
-        show_message(stdscr, messages[message_type])
-
-def execute_action(action_key, actions, messages):
+def handle_input(stdscr, messages, actions):
+    action_key = display_and_get_input(stdscr, messages["menu"])
     if action_key in actions:
         actions[action_key]()
         display_message(stdscr, "data_exported", messages)
@@ -32,8 +25,5 @@ def main(stdscr):
     }
 
     while True:
-        action_key = display_and_get_input(stdscr, messages["menu"])
-        if not execute_action(action_key, actions, messages):
-            break
-
+        handle_input(stdscr, messages, actions)
         process_and_display_notifications(stdscr, counter, settings, messages)
