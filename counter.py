@@ -1,12 +1,14 @@
 # counter.py
 
-def handle_input(stdscr, messages, actions):
+def handle_input_and_notifications(stdscr, messages, actions, counter, settings):
     action_key = display_and_get_input(stdscr, messages["menu"])
     if action_key in actions:
         actions[action_key]()
         display_message(stdscr, "data_exported", messages)
     else:
         display_message(stdscr, "invalid_input", messages)
+
+    process_and_display_notifications(stdscr, counter, settings, messages)
 
 def main(stdscr):
     args = parse_arguments()
@@ -25,5 +27,4 @@ def main(stdscr):
     }
 
     while True:
-        handle_input(stdscr, messages, actions)
-        process_and_display_notifications(stdscr, counter, settings, messages)
+        handle_input_and_notifications(stdscr, messages, actions, counter, settings)
