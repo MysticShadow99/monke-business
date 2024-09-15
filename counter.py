@@ -1,14 +1,14 @@
 # counter.py
 
-def handle_input_and_notifications(stdscr, messages, actions, counter, settings):
-    action_key = display_and_get_input(stdscr, messages["menu"])
-    if action_key in actions:
-        actions[action_key]()
+def handle_data(action, format, all_counters, history, messages):
+    if action == 'export':
+        export_data(format, all_counters, history)
         display_message(stdscr, "data_exported", messages)
+    elif action == 'import':
+        import_data(format, all_counters, history)
+        display_message(stdscr, "data_imported", messages)
     else:
         display_message(stdscr, "invalid_input", messages)
-
-    process_and_display_notifications(stdscr, counter, settings, messages)
 
 def main(stdscr):
     args = parse_arguments()
@@ -20,9 +20,9 @@ def main(stdscr):
     messages = load_messages(settings["language"])
 
     actions = {
-        'e': lambda: handle_data_operation('export', 'csv', all_counters, history, messages),
-        'j': lambda: handle_data_operation('export', 'json', all_counters, history, messages),
-        'k': lambda: handle_data_operation('import', 'json', all_counters, history, messages),
+        'e': lambda: handle_data('export', 'csv', all_counters, history, messages),
+        'j': lambda: handle_data('export', 'json', all_counters, history, messages),
+        'k': lambda: handle_data('import', 'json', all_counters, history, messages),
         'q': lambda: handle_file_operations("save", settings, counter, history, all_counters)
     }
 
