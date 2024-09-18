@@ -1,23 +1,20 @@
 # counter.py
 
-def handle_file(action, settings, counter, history, all_counters):
-    if action == 'save':
-        save_data(settings, counter, history, all_counters)
-        display_message(stdscr, "data_saved", messages)
-    elif action == 'load':
-        load_data(settings, counter, history, all_counters)
-        display_message(stdscr, "data_loaded", messages)
+def execute_action(stdscr, action_key, actions, messages):
+    action = actions.get(action_key)
+    if action:
+        action()
+        display_message(stdscr, "data_exported", messages)
     else:
         display_message(stdscr, "invalid_input", messages)
 
 def main(stdscr):
     args = parse_arguments()
-    settings = load_config_with_args(args)
+    counter, history, all_counters = {}, [], {}
 
+    settings, messages, all_counters = initialize_program(args, counter, history, all_counters)
     if settings is None:
         return
-
-    messages = load_messages(settings["language"])
 
     actions = {
         'e': lambda: handle_data('export', 'csv', all_counters, history, messages),
@@ -27,4 +24,6 @@ def main(stdscr):
     }
 
     while True:
-        handle_input_and_notifications(stdscr, messages, actions, counter, settings)
+        action_key = display_and_get_input(stdscr, messages["menu"])
+        execute_action(stdscr, action_key, actions, messages)
+        process_and_display_notifications(stdscr, counter, settings, messages)
