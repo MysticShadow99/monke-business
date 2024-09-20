@@ -1,17 +1,26 @@
 # counter.py
 
+def generate_message(action, messages):
+    message_mapping = {
+        'export': "data_exported",
+        'import': "data_imported",
+        'save': "data_saved",
+        'invalid': "invalid_input",
+        'file_error': "file_error"
+    }
+    return messages.get(message_mapping.get(action, "invalid"))
+
 def handle_file(action, settings, counter, history, all_counters, messages):
     try:
         if action == 'save':
             save_data(settings, counter, history, all_counters)
-            display_message(stdscr, "data_saved", messages)
         elif action == 'load':
             load_data(settings, counter, history, all_counters)
-            display_message(stdscr, "data_loaded", messages)
         else:
-            display_message(stdscr, "invalid_input", messages)
+            action = 'invalid'
+        display_message(stdscr, generate_message(action, messages), messages)
     except (IOError, OSError) as e:
-        display_message(stdscr, f"file_error: {str(e)}", messages)
+        display_message(stdscr, f"{generate_message('file_error', messages)}: {str(e)}", messages)
 
 def main(stdscr):
     args = parse_arguments()
