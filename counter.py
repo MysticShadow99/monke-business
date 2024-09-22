@@ -1,25 +1,15 @@
 # counter.py
 
-def generate_message(action, messages):
-    message_mapping = {
-        'export': "data_exported",
-        'import': "data_imported",
-        'save': "data_saved",
-        'invalid': "invalid_input",
-        'file_error': "file_error"
-    }
-    return messages.get(message_mapping.get(action, "invalid"))
-
-def handle_file(action, settings, counter, history, all_counters, messages):
+def handle_data_action(action, format, all_counters, history, messages):
     try:
-        if action == 'save':
-            save_data(settings, counter, history, all_counters)
-        elif action == 'load':
-            load_data(settings, counter, history, all_counters)
+        if action == 'export':
+            export_data(format, all_counters, history)
+        elif action == 'import':
+            import_data(format, all_counters, history)
         else:
             action = 'invalid'
         display_message(stdscr, generate_message(action, messages), messages)
-    except (IOError, OSError) as e:
+    except Exception as e:
         display_message(stdscr, f"{generate_message('file_error', messages)}: {str(e)}", messages)
 
 def main(stdscr):
@@ -31,9 +21,9 @@ def main(stdscr):
         return
 
     actions = {
-        'e': lambda: handle_data('export', 'csv', all_counters, history, messages),
-        'j': lambda: handle_data('export', 'json', all_counters, history, messages),
-        'k': lambda: handle_data('import', 'json', all_counters, history, messages),
+        'e': lambda: handle_data_action('export', 'csv', all_counters, history, messages),
+        'j': lambda: handle_data_action('export', 'json', all_counters, history, messages),
+        'k': lambda: handle_data_action('import', 'json', all_counters, history, messages),
         'q': lambda: handle_file('save', settings, counter, history, all_counters, messages)
     }
 
