@@ -1,16 +1,25 @@
 # counter.py
 
-def handle_data_action(action, format, all_counters, history, messages):
+def process_data(action, settings, counter, history, all_counters):
     try:
-        if action == 'export':
-            export_data(format, all_counters, history)
-        elif action == 'import':
-            import_data(format, all_counters, history)
+        if action == 'save':
+            save_data(settings, counter, history, all_counters)
+        elif action == 'load':
+            load_data(settings, counter, history, all_counters)
         else:
-            action = 'invalid'
+            return False
+        return True
+    except (IOError, OSError) as e:
+        return f"file_error: {str(e)}"
+
+def handle_file(action, settings, counter, history, all_counters, messages):
+    result = process_data(action, settings, counter, history, all_counters)
+    if result is True:
         display_message(stdscr, generate_message(action, messages), messages)
-    except Exception as e:
-        display_message(stdscr, f"{generate_message('file_error', messages)}: {str(e)}", messages)
+    elif isinstance(result, str):
+        display_message(stdscr, result, messages)
+    else:
+        display_message(stdscr, generate_message('invalid', messages), messages)
 
 def main(stdscr):
     args = parse_arguments()
