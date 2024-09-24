@@ -1,23 +1,9 @@
 # counter.py
 
-def process_data(action, settings, counter, history, all_counters):
-    try:
-        if action == 'save':
-            save_data(settings, counter, history, all_counters)
-        elif action == 'load':
-            load_data(settings, counter, history, all_counters)
-        else:
-            return False
-        return True
-    except (IOError, OSError) as e:
-        return f"file_error: {str(e)}"
-
-def handle_file(action, settings, counter, history, all_counters, messages):
-    result = process_data(action, settings, counter, history, all_counters)
-    if result is True:
-        display_message(stdscr, generate_message(action, messages), messages)
-    elif isinstance(result, str):
-        display_message(stdscr, result, messages)
+def process_user_action(stdscr, actions, messages):
+    action_key = display_and_get_input(stdscr, messages["menu"])
+    if action_key in actions:
+        execute_action(stdscr, action_key, actions, messages)
     else:
         display_message(stdscr, generate_message('invalid', messages), messages)
 
@@ -37,6 +23,5 @@ def main(stdscr):
     }
 
     while True:
-        action_key = display_and_get_input(stdscr, messages["menu"])
-        execute_action(stdscr, action_key, actions, messages)
+        process_user_action(stdscr, actions, messages)
         process_and_display_notifications(stdscr, counter, settings, messages)
