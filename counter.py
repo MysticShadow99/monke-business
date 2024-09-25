@@ -1,11 +1,20 @@
 # counter.py
 
-def process_user_action(stdscr, actions, messages):
-    action_key = display_and_get_input(stdscr, messages["menu"])
-    if action_key in actions:
-        execute_action(stdscr, action_key, actions, messages)
+def display_action_message(stdscr, action, messages, error=None):
+    if error:
+        display_message(stdscr, f"{generate_message('file_error', messages)}: {str(error)}", messages)
     else:
-        display_message(stdscr, generate_message('invalid', messages), messages)
+        display_message(stdscr, generate_message(action, messages), messages)
+
+def handle_file(action, settings, counter, history, all_counters, messages):
+    try:
+        result = process_data(action, settings, counter, history, all_counters)
+        if result is not True:
+            display_action_message(stdscr, 'invalid', messages)
+        else:
+            display_action_message(stdscr, action, messages)
+    except (IOError, OSError) as e:
+        display_action_message(stdscr, action, messages, error=e)
 
 def main(stdscr):
     args = parse_arguments()
