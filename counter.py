@@ -1,11 +1,19 @@
 # counter.py
 
-def initialize_program_and_parse_args():
-    args = parse_arguments()
-    counter, history, all_counters = {}, [], {}
+def handle_errors(func, *args, **kwargs):
+    try:
+        return func(*args, **kwargs)
+    except (IOError, OSError) as e:
+        return f"file_error: {str(e)}"
+    except Exception as e:
+        return f"error: {str(e)}"
 
-    settings, messages, all_counters = initialize_program(args, counter, history, all_counters)
-    return settings, messages, all_counters, counter, history
+def handle_file(action, settings, counter, history, all_counters, messages):
+    result = handle_errors(process_data, action, settings, counter, history, all_counters)
+    if isinstance(result, str):
+        display_action_message(stdscr, action, messages, error=result)
+    else:
+        display_action_message(stdscr, action, messages)
 
 def main(stdscr):
     settings, messages, all_counters, counter, history = initialize_program_and_parse_args()
