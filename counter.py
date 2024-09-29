@@ -1,19 +1,14 @@
 # counter.py
 
-def handle_errors(func, *args, **kwargs):
-    try:
-        return func(*args, **kwargs)
-    except (IOError, OSError) as e:
-        return f"file_error: {str(e)}"
-    except Exception as e:
-        return f"error: {str(e)}"
-
-def handle_file(action, settings, counter, history, all_counters, messages):
-    result = handle_errors(process_data, action, settings, counter, history, all_counters)
-    if isinstance(result, str):
-        display_action_message(stdscr, action, messages, error=result)
+def execute_action_with_message(stdscr, action_key, actions, messages):
+    if action_key in actions:
+        result = handle_errors(actions[action_key])
+        if isinstance(result, str):
+            display_action_message(stdscr, action_key, messages, error=result)
+        else:
+            display_action_message(stdscr, action_key, messages)
     else:
-        display_action_message(stdscr, action, messages)
+        display_action_message(stdscr, 'invalid', messages)
 
 def main(stdscr):
     settings, messages, all_counters, counter, history = initialize_program_and_parse_args()
@@ -29,5 +24,6 @@ def main(stdscr):
     }
 
     while True:
-        process_user_action(stdscr, actions, messages)
+        action_key = display_and_get_input(stdscr, messages["menu"])
+        execute_action_with_message(stdscr, action_key, actions, messages)
         process_and_display_notifications(stdscr, counter, settings, messages)
