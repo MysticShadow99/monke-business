@@ -1,14 +1,15 @@
 # counter.py
 
-def process_data_action(action, file_type, all_counters, history, messages):
-    try:
-        if action == 'export':
-            export_data(file_type, all_counters, history)
-        elif action == 'import':
-            import_data(file_type, all_counters, history)
-        display_action_message(stdscr, action, messages)
-    except (IOError, OSError) as e:
-        display_action_message(stdscr, action, messages, error=e)
+def display_notification_or_message(stdscr, content, is_notification, messages):
+    if is_notification:
+        display_notification(stdscr, content, messages)
+    else:
+        display_message(stdscr, content, messages)
+
+def process_and_display_notifications(stdscr, counter, settings, messages):
+    notifications = generate_notifications(counter, settings)
+    for notification in notifications:
+        display_notification_or_message(stdscr, notification, True, messages)
 
 def main(stdscr):
     settings, messages, all_counters, counter, history = initialize_program_and_parse_args()
