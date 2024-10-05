@@ -1,14 +1,17 @@
 # counter.py
 
-def handle_user_input_and_display(stdscr, messages, actions):
-    action_key = display_and_get_input(stdscr, messages["menu"])
-    execute_action_with_message(stdscr, action_key, actions, messages)
+def initialize_program():
+    settings, messages, all_counters, counter, history = initialize_program_and_parse_args()
+    if settings is None:
+        return None, None
+    return settings, messages, all_counters, counter, history
 
 def main(stdscr):
-    settings, messages, all_counters, counter, history = initialize_program_and_parse_args()
-
-    if settings is None:
+    program_data = initialize_program()
+    if program_data is None:
         return
+
+    settings, messages, all_counters, counter, history = program_data
 
     actions = initialize_actions(settings, counter, history, all_counters, messages)
 
