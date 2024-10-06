@@ -1,10 +1,8 @@
 # counter.py
 
-def initialize_program():
-    settings, messages, all_counters, counter, history = initialize_program_and_parse_args()
-    if settings is None:
-        return None, None
-    return settings, messages, all_counters, counter, history
+def generate_and_display_notifications(stdscr, counter, settings, messages):
+    notifications = generate_notifications(counter, settings)
+    process_and_display_content(stdscr, notifications, 'notification', messages)
 
 def main(stdscr):
     program_data = initialize_program()
@@ -17,4 +15,4 @@ def main(stdscr):
 
     while True:
         handle_user_input_and_display(stdscr, messages, actions)
-        process_and_display_notifications(stdscr, counter, settings, messages)
+        generate_and_display_notifications(stdscr, counter, settings, messages)
