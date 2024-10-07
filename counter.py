@@ -1,8 +1,9 @@
 # counter.py
 
-def generate_and_display_notifications(stdscr, counter, settings, messages):
-    notifications = generate_notifications(counter, settings)
-    process_and_display_content(stdscr, notifications, 'notification', messages)
+def execute_and_display_action(stdscr, action_key, actions, messages):
+    if action_key in actions:
+        actions[action_key]()
+        display_action_message(stdscr, action_key, messages)
 
 def main(stdscr):
     program_data = initialize_program()
@@ -14,5 +15,6 @@ def main(stdscr):
     actions = initialize_actions(settings, counter, history, all_counters, messages)
 
     while True:
-        handle_user_input_and_display(stdscr, messages, actions)
+        action_key = display_and_get_input(stdscr, messages["menu"])
+        execute_and_display_action(stdscr, action_key, actions, messages)
         generate_and_display_notifications(stdscr, counter, settings, messages)
