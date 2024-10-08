@@ -1,20 +1,26 @@
-# counter.py
-
-def execute_and_display_action(stdscr, action_key, actions, messages):
-    if action_key in actions:
-        actions[action_key]()
-        display_action_message(stdscr, action_key, messages)
-
-def main(stdscr):
-    program_data = initialize_program()
-    if program_data is None:
+func filterOperationsByKeyword() {
+    file, err := os.Open("results.txt")
+    if err != nil {
+        log.Println("Error opening file:", err)
         return
+    }
+    defer file.Close()
 
-    settings, messages, all_counters, counter, history = program_data
+    var keyword string
+    fmt.Print("Enter the keyword to filter operations: ")
+    fmt.Scanln(&keyword)
 
-    actions = initialize_actions(settings, counter, history, all_counters, messages)
+    scanner := bufio.NewScanner(file)
+    fmt.Printf("Operations containing the keyword '%s':\n", keyword)
 
-    while True:
-        action_key = display_and_get_input(stdscr, messages["menu"])
-        execute_and_display_action(stdscr, action_key, actions, messages)
-        generate_and_display_notifications(stdscr, counter, settings, messages)
+    for scanner.Scan() {
+        line := scanner.Text()
+        if strings.Contains(line, keyword) {
+            fmt.Println(line)
+        }
+    }
+
+    if err := scanner.Err(); err != nil {
+        log.Println("Error reading file:", err)
+    }
+}
