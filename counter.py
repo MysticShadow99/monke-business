@@ -1,26 +1,23 @@
-func filterOperationsByKeyword() {
-    file, err := os.Open("results.txt")
-    if err != nil {
-        log.Println("Error opening file:", err)
+# counter.py
+
+def initialize_program_and_actions():
+    program_data = initialize_program()
+    if program_data is None:
+        return None, None
+
+    settings, messages, all_counters, counter, history = program_data
+    actions = initialize_actions(settings, counter, history, all_counters, messages)
+
+    return program_data, actions
+
+def main(stdscr):
+    program_data, actions = initialize_program_and_actions()
+    if program_data is None:
         return
-    }
-    defer file.Close()
 
-    var keyword string
-    fmt.Print("Enter the keyword to filter operations: ")
-    fmt.Scanln(&keyword)
+    settings, messages, all_counters, counter, history = program_data
 
-    scanner := bufio.NewScanner(file)
-    fmt.Printf("Operations containing the keyword '%s':\n", keyword)
-
-    for scanner.Scan() {
-        line := scanner.Text()
-        if strings.Contains(line, keyword) {
-            fmt.Println(line)
-        }
-    }
-
-    if err := scanner.Err(); err != nil {
-        log.Println("Error reading file:", err)
-    }
-}
+    while True:
+        action_key = display_and_get_input(stdscr, messages["menu"])
+        execute_and_display_action(stdscr, action_key, actions, messages)
+        generate_and_display_notifications(stdscr, counter, settings, messages)
