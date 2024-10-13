@@ -1,16 +1,23 @@
 # counter.py
 
-def get_and_process_user_input(stdscr, actions, messages):
-    action_key = display_and_get_input(stdscr, messages["menu"])
+def display_content(stdscr, content_list, messages):
+    for content in content_list:
+        stdscr.addstr(f"{messages[content]}\n")
+
+def generate_and_display_notifications(stdscr, counter, settings, messages):
+    notifications = generate_notifications(counter, settings)
+    display_content(stdscr, notifications, messages)
+
+def execute_and_display_action(stdscr, action_key, actions, messages):
     if action_key in actions:
         actions[action_key]()
-        display_content(stdscr, [action_key], 'message', messages)
+        display_content(stdscr, [action_key], messages)
 
-def process_user_actions_and_notifications(stdscr, actions, counter, settings, messages):
-    get_and_process_user_input(stdscr, actions, messages)
-    generate_and_display_notifications(stdscr, counter, settings, messages)
+def process_input_and_action(stdscr, actions, messages):
+    action_key = display_and_get_input(stdscr, messages["menu"])
+    execute_and_display_action(stdscr, action_key, actions, messages)
 
-def initialize_and_run(stdscr):
+def main(stdscr):
     program_data, actions = initialize_program_and_actions()
     if program_data is None:
         return
@@ -18,7 +25,5 @@ def initialize_and_run(stdscr):
     settings, messages, all_counters, counter, history = program_data
 
     while True:
-        process_user_actions_and_notifications(stdscr, actions, counter, settings, messages)
-
-def main(stdscr):
-    initialize_and_run(stdscr)
+        process_input_and_action(stdscr, actions, messages)
+        generate_and_display_notifications(stdscr, counter, settings, messages)
