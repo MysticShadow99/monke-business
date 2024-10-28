@@ -1,11 +1,15 @@
 # counter.py
 
-def reset_counter(program_data):
-    program_data[3]['total'] = 0
+def toggle_notifications(program_data):
+    program_data[0]["notifications"] = not program_data[0]["notifications"]
 
-def display_reset_option(stdscr, program_data):
-    if stdscr.getkey() == 'r':
+def display_options(stdscr, program_data):
+    stdscr.addstr("Press 'r' to reset the counter, 'n' to toggle notifications\n")
+    key = stdscr.getkey()
+    if key == 'r':
         reset_counter(program_data)
+    elif key == 'n':
+        toggle_notifications(program_data)
 
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
@@ -14,5 +18,5 @@ def main(stdscr):
 
     while True:
         process_input_action_and_notifications(stdscr, actions, program_data)
-        display_reset_option(stdscr, program_data)
+        display_options(stdscr, program_data)
         update_counter(program_data)
