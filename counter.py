@@ -1,14 +1,19 @@
 # counter.py
 
-def toggle_notifications(program_data):
-    program_data[0]["notifications"] = not program_data[0]["notifications"]
+def load_settings(file_name="settings.json"):
+    import json
+    try:
+        with open(file_name, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"notifications": True}
 
-def display_options(stdscr, program_data):
-    key = stdscr.getkey()
-    if key == 'r':
-        reset_counter(program_data)
-    elif key == 'n':
-        toggle_notifications(program_data)
+def initialize_program_and_actions():
+    settings = load_settings()
+    messages = {"action_1": "Action 1 executed", "menu": "Select an action:"}
+    counter = {"total": 0, "current": 0, "max": 0}
+    actions = {"action_1": lambda: None}
+    return [settings, messages, counter], actions
 
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
