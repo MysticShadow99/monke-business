@@ -1,15 +1,7 @@
 # counter.py
 
-def load_settings(file_name="settings.json"):
-    import json
-    try:
-        with open(file_name, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {"notifications": True}
-
 def initialize_program_and_actions():
-    settings = load_settings()
+    settings = {"notifications": True}
     messages = {"action_1": "Action 1 executed", "menu": "Select an action:"}
     counter = {"total": 0, "current": 0, "max": 0}
     actions = {"action_1": lambda: None}
