@@ -1,13 +1,10 @@
 # counter.py
 
-def log_counter_state(counter, log_file="counter_log.txt"):
-    with open(log_file, 'a') as f:
-        f.write(f"Current count: {counter['total']}, Max count: {counter['max']}\n")
-
 def update_counter_and_log(program_data):
     program_data[2]["total"] += 1
     program_data[2]["max"] = max(program_data[2]["total"], program_data[2]["max"])
-    log_counter_state(program_data[2])
+    with open("counter_log.txt", 'a') as f:
+        f.write(f"Current count: {program_data[2]['total']}, Max count: {program_data[2]['max']}\n")
 
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
