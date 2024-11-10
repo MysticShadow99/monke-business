@@ -1,7 +1,8 @@
 # counter.py
 
-def display_summary(program_data):
-    print(f"Total: {program_data[2]['total']}, Max: {program_data[2]['max']}, Notifications: {program_data[0]['notifications']}")
+def log_summary(program_data, log_file="summary_log.txt"):
+    with open(log_file, 'a') as f:
+        f.write(f"Total: {program_data[2]['total']}, Max: {program_data[2]['max']}, Notifications: {program_data[0]['notifications']}\n")
 
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
@@ -13,3 +14,4 @@ def main(stdscr):
         display_options(stdscr, program_data)
         update_counter_and_log(program_data)
         display_summary(program_data)
+        log_summary(program_data)
