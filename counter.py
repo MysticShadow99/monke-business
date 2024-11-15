@@ -1,8 +1,9 @@
 # counter.py
 
-def archive_log(file_name="counter_log.txt", archive_file="archive_log.txt"):
-    with open(file_name, 'w') as f:
-        f.write("")  # Clear the log after archiving
+def reset_counter(program_data):
+    program_data[2]["total"] = 0
+    program_data[2]["current"] = 0
+    print("Counter has been reset.")
 
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
@@ -16,3 +17,4 @@ def main(stdscr):
         display_options(stdscr, program_data)
         update_counter_and_log(program_data)
         log_summary(program_data)
+        reset_counter(program_data)  # Reset counter for demonstration
