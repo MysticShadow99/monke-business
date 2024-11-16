@@ -1,20 +1,39 @@
-# counter.py
-
-def reset_counter(program_data):
-    program_data[2]["total"] = 0
-    program_data[2]["current"] = 0
-    print("Counter has been reset.")
-
-def main(stdscr):
-    program_data, actions = initialize_program_and_actions()
-    if program_data is None:
+func findMostFrequentWord() {
+    inputFile, err := os.Open("results.txt")
+    if err != nil {
+        log.Println("Error opening file:", err)
         return
+    }
+    defer inputFile.Close()
 
-    archive_log()  # Archive log at the start of the program
+    wordCounts := make(map[string]int)
+    scanner := bufio.NewScanner(inputFile)
 
-    while True:
-        process_input_action_and_notifications(stdscr, actions, program_data)
-        display_options(stdscr, program_data)
-        update_counter_and_log(program_data)
-        log_summary(program_data)
-        reset_counter(program_data)  # Reset counter for demonstration
+    for scanner.Scan() {
+        line := scanner.Text()
+        words := strings.Fields(line)
+        for _, word := range words {
+            wordCounts[word]++
+        }
+    }
+
+    if err := scanner.Err(); err != nil {
+        log.Println("Error reading file:", err)
+    }
+
+    mostFrequentWord := ""
+    highestCount := 0
+
+    for word, count := range wordCounts {
+        if count > highestCount {
+            mostFrequentWord = word
+            highestCount = count
+        }
+    }
+
+    if mostFrequentWord != "" {
+        fmt.Printf("The most frequent word is '%s', appearing %d times.\n", mostFrequentWord, highestCount)
+    } else {
+        fmt.Println("No words found in the file.")
+    }
+}
