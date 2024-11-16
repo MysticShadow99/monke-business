@@ -1,39 +1,14 @@
-func findMostFrequentWord() {
-    inputFile, err := os.Open("results.txt")
-    if err != nil {
-        log.Println("Error opening file:", err)
+# counter.py
+
+def main(stdscr):
+    program_data, actions = initialize_program_and_actions()
+    if program_data is None:
         return
-    }
-    defer inputFile.Close()
 
-    wordCounts := make(map[string]int)
-    scanner := bufio.NewScanner(inputFile)
+    archive_log()  # Archive log at the start of the program
 
-    for scanner.Scan() {
-        line := scanner.Text()
-        words := strings.Fields(line)
-        for _, word := range words {
-            wordCounts[word]++
-        }
-    }
-
-    if err := scanner.Err(); err != nil {
-        log.Println("Error reading file:", err)
-    }
-
-    mostFrequentWord := ""
-    highestCount := 0
-
-    for word, count := range wordCounts {
-        if count > highestCount {
-            mostFrequentWord = word
-            highestCount = count
-        }
-    }
-
-    if mostFrequentWord != "" {
-        fmt.Printf("The most frequent word is '%s', appearing %d times.\n", mostFrequentWord, highestCount)
-    } else {
-        fmt.Println("No words found in the file.")
-    }
-}
+    while True:
+        process_input_action_and_notifications(stdscr, actions, program_data)
+        display_options(stdscr, program_data)
+        update_counter_and_log(program_data)
+        log_summary(program_data)
