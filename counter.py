@@ -1,5 +1,8 @@
 # counter.py
 
+def notify_user_reset():
+    print("User notification: The counter has been reset!")
+
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
     if program_data is None:
@@ -12,3 +15,4 @@ def main(stdscr):
         display_options(stdscr, program_data)
         update_counter_and_log(program_data)
         log_summary(program_data)
+        notify_user_reset()  # Notify user for demonstration
