@@ -1,12 +1,7 @@
 # counter.py
 
-def auto_save_log(file_name="auto_save_log.txt"):
-    with open(file_name, 'a') as f:
-        f.write("Counter state saved.\n")
-
 def validate_data_integrity(program_data):
     if program_data[2]["total"] < 0:
-        print("Warning: Total count is negative. Resetting to zero.")
         program_data[2]["total"] = 0
 
 def main(stdscr):
@@ -21,4 +16,3 @@ def main(stdscr):
         validate_data_integrity(program_data)  # Validate data
         display_options(stdscr, program_data)
         update_counter_and_log(program_data)
-        auto_save_log()  # Auto-save log for demonstration
