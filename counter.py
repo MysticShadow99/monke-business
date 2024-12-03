@@ -3,8 +3,12 @@
 def auto_backup_data(program_data, backup_file="backup_data.txt"):
     with open(backup_file, 'w') as f:
         f.write(str(program_data))
-    program_data[2]["backup_count"] = program_data[2].get("backup_count", 0) + 1  # Track backup inline
+    program_data[2]["backup_count"] = program_data[2].get("backup_count", 0) + 1
     print("Backup completed successfully.")  # Inline notification
+
+def check_critical_threshold(program_data, threshold=100):
+    if program_data[2]["total"] > threshold:
+        print("Warning: Total exceeds the critical threshold!")
 
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
@@ -13,6 +17,7 @@ def main(stdscr):
 
     while True:
         process_input_action_and_notifications(stdscr, actions, program_data)
-        auto_backup_data(program_data)  # Combined backup, notification, and tracking
+        auto_backup_data(program_data)
+        check_critical_threshold(program_data)  # New critical threshold check
         display_options(stdscr, program_data)
         update_counter_and_log(program_data)
