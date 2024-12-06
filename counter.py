@@ -6,13 +6,6 @@ def auto_backup_data(program_data, backup_file="backup_data.txt"):
     program_data[2]["backup_count"] = program_data[2].get("backup_count", 0) + 1
     print("Backup completed successfully.")  # Inline notification
 
-def log_warnings(program_data, threshold=100):
-    if program_data[2]["total"] > threshold:
-        warning = f"Warning: Total ({program_data[2]['total']}) exceeds the critical threshold!"
-        with open("warnings.log", 'a') as log_file:
-            log_file.write(warning + "\n")
-        print(warning)
-
 def main(stdscr):
     program_data, actions = initialize_program_and_actions()
     if program_data is None:
@@ -21,6 +14,10 @@ def main(stdscr):
     while True:
         process_input_action_and_notifications(stdscr, actions, program_data)
         auto_backup_data(program_data)
-        log_warnings(program_data)  # Log warnings to a file
+        if program_data[2]["total"] > 100:
+            warning = f"Warning: Total ({program_data[2]['total']}) exceeds the critical threshold!"
+            with open("warnings.log", 'a') as log_file:
+                log_file.write(warning + "\n")
+            print(warning)  # Inline critical check and logging
         display_options(stdscr, program_data)
         update_counter_and_log(program_data)
