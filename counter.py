@@ -1,42 +1,38 @@
 # counter.py
 
-import datetime
+from datetime import datetime
+from pathlib import Path
 
-CRITICAL_THRESHOLD = 100
+THRESHOLD = 100
 
-def auto_backup_data(data, backup_prefix="backup_data"):
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{backup_prefix}_{timestamp}.txt"
+def write_file(name, content, append=False):
+    path = Path(name)
+    text = content + "\n"
+    path.write_text((path.read_text() + text) if append and path.exists() else text)
+
+def auto_backup(data):
+    stats = data[2]
+    stats["backup_count"] = stats.get("backup_count", 0) + 1
+    name = f"backup_{datetime.now():%Y%m%d_%H%M%S}.txt"
     try:
-        with open(filename, 'w') as f:
-            f.write(str(data))
-        stats = get_program_stats(data)
-        stats["backup_count"] = stats.get("backup_count", 0) + 1
-        print(f"✅ Backup saved to {filename}")
+        write_file(name, str(data))
+        print(f"✅ Backup saved: {name}")
     except Exception as e:
-        print(f"❌ Backup failed: {e}")
-
-def log_warning(message, log_file="warnings.log"):
-    with open(log_file, 'a') as f:
-        f.write(message + "\n")
-    print(message)
-
-def get_program_stats(data):
-    return data[2]  # Could be replaced with better structure later
+        print(f"❌ Backup error: {e}")
 
 def main(stdscr):
     data, actions = initialize_program_and_actions()
-    if data is None:
-        return
+    if not data: return
 
     while True:
+        stats = data[2]
         process_input_action_and_notifications(stdscr, actions, data)
-        auto_backup_data(data)
+        auto_backup(data)
 
-        stats = get_program_stats(data)
-        if stats.get("total", 0) > CRITICAL_THRESHOLD:
-            warning_msg = f"⚠️ Warning: Total ({stats['total']}) exceeds critical threshold!"
-            log_warning(warning_msg)
+        if stats.get("total", 0) > THRESHOLD:
+            msg = f"⚠️ Total ({stats['total']}) > {THRESHOLD}"
+            write_file("warnings.log", msg, append=True)
+            print(msg)
 
         display_options(stdscr, data)
         update_counter_and_log(data)
