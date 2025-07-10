@@ -4,33 +4,39 @@ import datetime
 
 CRITICAL_THRESHOLD = 100
 
-def auto_backup_data(program_data, backup_file_prefix="backup_data"):
+def auto_backup_data(data, backup_prefix="backup_data"):
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_file = f"{backup_file_prefix}_{timestamp}.txt"
+    filename = f"{backup_prefix}_{timestamp}.txt"
     try:
-        with open(backup_file, 'w') as f:
-            f.write(str(program_data))
-        program_data_section = program_data[2]
-        program_data_section["backup_count"] = program_data_section.get("backup_count", 0) + 1
-        print(f"Backup completed successfully to {backup_file}.")  # Inline notification
+        with open(filename, 'w') as f:
+            f.write(str(data))
+        stats = get_program_stats(data)
+        stats["backup_count"] = stats.get("backup_count", 0) + 1
+        print(f"✅ Backup saved to {filename}")
     except Exception as e:
-        print(f"Backup failed: {e}")
+        print(f"❌ Backup failed: {e}")
+
+def log_warning(message, log_file="warnings.log"):
+    with open(log_file, 'a') as f:
+        f.write(message + "\n")
+    print(message)
+
+def get_program_stats(data):
+    return data[2]  # Could be replaced with better structure later
 
 def main(stdscr):
-    program_data, actions = initialize_program_and_actions()
-    if program_data is None:
+    data, actions = initialize_program_and_actions()
+    if data is None:
         return
 
     while True:
-        process_input_action_and_notifications(stdscr, actions, program_data)
-        auto_backup_data(program_data)
+        process_input_action_and_notifications(stdscr, actions, data)
+        auto_backup_data(data)
 
-        total = program_data[2]["total"]
-        if total > CRITICAL_THRESHOLD:
-            warning = f"Warning: Total ({total}) exceeds the critical threshold!"
-            with open("warnings.log", 'a') as log_file:
-                log_file.write(warning + "\n")
-            print(warning)
+        stats = get_program_stats(data)
+        if stats.get("total", 0) > CRITICAL_THRESHOLD:
+            warning_msg = f"⚠️ Warning: Total ({stats['total']}) exceeds critical threshold!"
+            log_warning(warning_msg)
 
-        display_options(stdscr, program_data)
-        update_counter_and_log(program_data)
+        display_options(stdscr, data)
+        update_counter_and_log(data)
