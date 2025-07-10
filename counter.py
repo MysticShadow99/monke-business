@@ -1,24 +1,26 @@
 # counter.py
 
+import json
 from datetime import datetime
 from pathlib import Path
 
 THRESHOLD = 100
 
-def write_file(name, content, append=False):
-    path = Path(name)
-    text = content + "\n"
-    path.write_text((path.read_text() + text) if append and path.exists() else text)
+def write_file(path, content, append=False, as_json=False):
+    mode = 'a' if append else 'w'
+    with open(path, mode, encoding='utf-8') as f:
+        if as_json:
+            json.dump(content, f, ensure_ascii=False, indent=2)
+        else:
+            f.write(content + "\n")
 
 def auto_backup(data):
-    stats = data[2]
-    stats["backup_count"] = stats.get("backup_count", 0) + 1
-    name = f"backup_{datetime.now():%Y%m%d_%H%M%S}.txt"
+    data[2]["backup_count"] = data[2].get("backup_count", 0) + 1
+    name = f"backup_{datetime.now():%Y%m%d_%H%M%S}.json"
     try:
-        write_file(name, str(data))
-        print(f"✅ Backup saved: {name}")
+        write_file(name, data, as_json=True)
     except Exception as e:
-        print(f"❌ Backup error: {e}")
+        write_file("warnings.log", f"❌ Backup error: {e}", append=True)
 
 def main(stdscr):
     data, actions = initialize_program_and_actions()
@@ -30,9 +32,7 @@ def main(stdscr):
         auto_backup(data)
 
         if stats.get("total", 0) > THRESHOLD:
-            msg = f"⚠️ Total ({stats['total']}) > {THRESHOLD}"
-            write_file("warnings.log", msg, append=True)
-            print(msg)
+            write_file("warnings.log", f"⚠️ Total ({stats['total']}) > {THRESHOLD}", append=True)
 
         display_options(stdscr, data)
         update_counter_and_log(data)
